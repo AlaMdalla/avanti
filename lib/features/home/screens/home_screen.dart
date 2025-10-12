@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/custom_widgets.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -30,59 +32,309 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = Supabase.instance.client.auth.currentUser;
+    final userName = user?.email?.split('@').first ?? 'Student';
     
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Welcome'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _signOut(context),
-            tooltip: 'Sign Out',
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Message
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            // Custom App Bar
+            SliverToBoxAdapter(
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: const BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(
-                          Icons.person,
-                          size: 40,
-                          color: Theme.of(context).primaryColor,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Welcome back,',
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.textOnPrimary.withOpacity(0.8),
+                              ),
+                            ),
+                            Text(
+                              userName,
+                              style: AppTextStyles.h3.copyWith(
+                                color: AppColors.textOnPrimary,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Welcome!',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.notifications_outlined,
+                                color: AppColors.textOnPrimary,
                               ),
-                              Text(
-                                user?.email ?? 'User',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.grey[600],
-                                ),
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Notifications coming soon!')),
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.logout,
+                                color: AppColors.textOnPrimary,
                               ),
-                            ],
+                              onPressed: () => _signOut(context),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    
+                    // Search Bar
+                    CustomSearchBar(
+                      hintText: 'Search courses, topics...',
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Search feature coming soon!')),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Progress Overview
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Your Progress',
+                      style: AppTextStyles.h4,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    ProgressCard(
+                      title: 'Weekly Learning Goal',
+                      subtitle: '4 of 7 days completed this week',
+                      progress: 0.57,
+                      progressText: '57%',
+                      icon: Icons.emoji_events,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Categories
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Categories',
+                      style: AppTextStyles.h4,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    SizedBox(
+                      height: 40,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          CategoryChip(
+                            label: 'All',
+                            isSelected: true,
+                            onTap: () {},
                           ),
+                          const SizedBox(width: AppSpacing.sm),
+                          CategoryChip(
+                            label: 'Programming',
+                            isSelected: false,
+                            onTap: () {},
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          CategoryChip(
+                            label: 'Design',
+                            isSelected: false,
+                            onTap: () {},
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          CategoryChip(
+                            label: 'Business',
+                            isSelected: false,
+                            onTap: () {},
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          CategoryChip(
+                            label: 'Marketing',
+                            isSelected: false,
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Continue Learning
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Continue Learning',
+                          style: AppTextStyles.h4,
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('View all courses coming soon!')),
+                            );
+                          },
+                          child: const Text('View All'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    SizedBox(
+                      height: 240,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          SizedBox(
+                            width: 200,
+                            child: CourseCard(
+                              title: 'Flutter Development Basics',
+                              instructor: 'John Doe',
+                              duration: '4h 30m',
+                              progress: 0.65,
+                              imageUrl: '',
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Course details coming soon!')),
+                                );
+                              },
+                              isFeatured: true,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          SizedBox(
+                            width: 200,
+                            child: CourseCard(
+                              title: 'UI/UX Design Principles',
+                              instructor: 'Jane Smith',
+                              duration: '3h 15m',
+                              progress: 0.30,
+                              imageUrl: '',
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Course details coming soon!')),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          SizedBox(
+                            width: 200,
+                            child: CourseCard(
+                              title: 'JavaScript Fundamentals',
+                              instructor: 'Mike Johnson',
+                              duration: '5h 45m',
+                              progress: 0.15,
+                              imageUrl: '',
+                              onTap: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Course details coming soon!')),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Quick Actions
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Quick Actions',
+                      style: AppTextStyles.h4,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      crossAxisSpacing: AppSpacing.md,
+                      mainAxisSpacing: AppSpacing.md,
+                      childAspectRatio: 1.2,
+                      children: [
+                        FeatureCard(
+                          title: 'My Courses',
+                          subtitle: 'View all enrolled courses',
+                          icon: Icons.school,
+                          color: AppColors.primary,
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('My Courses coming soon!')),
+                            );
+                          },
+                        ),
+                        FeatureCard(
+                          title: 'Certificates',
+                          subtitle: 'View earned certificates',
+                          icon: Icons.workspace_premium,
+                          color: AppColors.secondary,
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Certificates coming soon!')),
+                            );
+                          },
+                        ),
+                        FeatureCard(
+                          title: 'Study Plan',
+                          subtitle: 'Organize your learning',
+                          icon: Icons.schedule,
+                          color: AppColors.success,
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Study Plan coming soon!')),
+                            );
+                          },
+                        ),
+                        FeatureCard(
+                          title: 'Community',
+                          subtitle: 'Connect with learners',
+                          icon: Icons.people,
+                          color: AppColors.warning,
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Community coming soon!')),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -90,105 +342,10 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
             
-            // User Information
-            const Text(
-              'Account Information',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    _buildInfoRow('Email', user?.email ?? 'N/A'),
-                    const Divider(),
-                    _buildInfoRow('User ID', user?.id ?? 'N/A'),
-                    const Divider(),
-                    _buildInfoRow(
-                      'Email Verified', 
-                      user?.emailConfirmedAt != null ? 'Yes' : 'No'
-                    ),
-                    const Divider(),
-                    _buildInfoRow(
-                      'Last Sign In', 
-                      user?.lastSignInAt?.toString().split('.')[0] ?? 'N/A'
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            
-            // App Features Section
-            const Text(
-              'App Features',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Feature Cards
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                children: [
-                  _buildFeatureCard(
-                    context,
-                    'Profile',
-                    Icons.person,
-                    'Manage your profile',
-                    () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Profile feature coming soon!')),
-                      );
-                    },
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Settings',
-                    Icons.settings,
-                    'App preferences',
-                    () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Settings feature coming soon!')),
-                      );
-                    },
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Data',
-                    Icons.storage,
-                    'View your data',
-                    () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Data feature coming soon!')),
-                      );
-                    },
-                  ),
-                  _buildFeatureCard(
-                    context,
-                    'Help',
-                    Icons.help,
-                    'Get support',
-                    () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Help feature coming soon!')),
-                      );
-                    },
-                  ),
-                ],
-              ),
+            // Bottom Spacing
+            const SliverToBoxAdapter(
+              child: SizedBox(height: AppSpacing.xl),
             ),
           ],
         ),
@@ -196,73 +353,5 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 120,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: TextStyle(
-              color: Colors.grey[600],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
-  Widget _buildFeatureCard(
-    BuildContext context,
-    String title,
-    IconData icon,
-    String description,
-    VoidCallback onTap,
-  ) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 40,
-                color: Theme.of(context).primaryColor,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
