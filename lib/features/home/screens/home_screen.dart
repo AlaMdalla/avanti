@@ -125,166 +125,55 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             
-            // Progress Overview
+            // Welcome Card
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Your Progress',
-                      style: AppTextStyles.h4,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    ProgressCard(
-                      title: 'Weekly Learning Goal',
-                      subtitle: '4 of 7 days completed this week',
-                      progress: 0.57,
-                      progressText: '57%',
-                      icon: Icons.emoji_events,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            // Categories
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Categories',
-                      style: AppTextStyles.h4,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    SizedBox(
-                      height: 40,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    boxShadow: const [AppShadows.soft],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          CategoryChip(
-                            label: 'All',
-                            isSelected: true,
-                            onTap: () {},
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          CategoryChip(
-                            label: 'Programming',
-                            isSelected: false,
-                            onTap: () {},
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          CategoryChip(
-                            label: 'Design',
-                            isSelected: false,
-                            onTap: () {},
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          CategoryChip(
-                            label: 'Business',
-                            isSelected: false,
-                            onTap: () {},
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          CategoryChip(
-                            label: 'Marketing',
-                            isSelected: false,
-                            onTap: () {},
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            // Continue Learning
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Continue Learning',
-                          style: AppTextStyles.h4,
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('View all courses coming soon!')),
-                            );
-                          },
-                          child: const Text('View All'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    SizedBox(
-                      height: 240,
-                      child: ListView(
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          SizedBox(
-                            width: 200,
-                            child: CourseCard(
-                              title: 'Flutter Development Basics',
-                              instructor: 'John Doe',
-                              duration: '4h 30m',
-                              progress: 0.65,
-                              imageUrl: '',
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Course details coming soon!')),
-                                );
-                              },
-                              isFeatured: true,
+                          Container(
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            decoration: BoxDecoration(
+                              gradient: AppColors.primaryGradient,
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                            ),
+                            child: const Icon(
+                              Icons.waving_hand,
+                              color: AppColors.textOnPrimary,
+                              size: 24,
                             ),
                           ),
                           const SizedBox(width: AppSpacing.md),
-                          SizedBox(
-                            width: 200,
-                            child: CourseCard(
-                              title: 'UI/UX Design Principles',
-                              instructor: 'Jane Smith',
-                              duration: '3h 15m',
-                              progress: 0.30,
-                              imageUrl: '',
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Course details coming soon!')),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.md),
-                          SizedBox(
-                            width: 200,
-                            child: CourseCard(
-                              title: 'JavaScript Fundamentals',
-                              instructor: 'Mike Johnson',
-                              duration: '5h 45m',
-                              progress: 0.15,
-                              imageUrl: '',
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Course details coming soon!')),
-                                );
-                              },
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Welcome to Avanti!',
+                                  style: AppTextStyles.h4,
+                                ),
+                                const SizedBox(height: AppSpacing.xs),
+                                Text(
+                                  'Your learning journey starts here',
+                                  style: AppTextStyles.bodySmall,
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -310,46 +199,46 @@ class HomeScreen extends StatelessWidget {
                       childAspectRatio: 1.2,
                       children: [
                         FeatureCard(
-                          title: 'My Courses',
-                          subtitle: 'View all enrolled courses',
-                          icon: Icons.school,
+                          title: 'Settings',
+                          subtitle: 'App preferences',
+                          icon: Icons.settings,
                           color: AppColors.primary,
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Use the Profile tab to see your course statistics!')),
+                              const SnackBar(content: Text('Settings coming soon!')),
                             );
                           },
                         ),
                         FeatureCard(
-                          title: 'Certificates',
-                          subtitle: 'View earned certificates',
-                          icon: Icons.workspace_premium,
+                          title: 'Help & Support',
+                          subtitle: 'Get help and support',
+                          icon: Icons.help_outline,
                           color: AppColors.secondary,
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Certificates coming soon!')),
+                              const SnackBar(content: Text('Help & Support coming soon!')),
                             );
                           },
                         ),
                         FeatureCard(
-                          title: 'Study Plan',
-                          subtitle: 'Organize your learning',
-                          icon: Icons.schedule,
+                          title: 'Notifications',
+                          subtitle: 'Manage notifications',
+                          icon: Icons.notifications_outlined,
                           color: AppColors.success,
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Study Plan coming soon!')),
+                              const SnackBar(content: Text('Notifications coming soon!')),
                             );
                           },
                         ),
                         FeatureCard(
-                          title: 'Community',
-                          subtitle: 'Connect with learners',
-                          icon: Icons.people,
+                          title: 'About',
+                          subtitle: 'App information',
+                          icon: Icons.info_outline,
                           color: AppColors.warning,
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Community coming soon!')),
+                              const SnackBar(content: Text('About page coming soon!')),
                             );
                           },
                         ),

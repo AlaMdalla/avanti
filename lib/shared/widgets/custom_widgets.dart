@@ -1,124 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 
+// CourseCard widget removed to simplify the UI
+// Uncomment this widget if you need course functionality in the future
+
+/*
 class CourseCard extends StatelessWidget {
-  final String title;
-  final String instructor;
-  final String duration;
-  final double progress;
-  final String imageUrl;
-  final VoidCallback onTap;
-  final bool isFeatured;
-
-  const CourseCard({
-    super.key,
-    required this.title,
-    required this.instructor,
-    required this.duration,
-    required this.progress,
-    required this.imageUrl,
-    required this.onTap,
-    this.isFeatured = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          boxShadow: const [AppShadows.soft],
-          border: isFeatured
-              ? Border.all(color: AppColors.primary, width: 2)
-              : null,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Course Image
-            Container(
-              height: 120,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(AppRadius.lg),
-                ),
-                gradient: AppColors.primaryGradient,
-              ),
-              child: Center(
-                child: Icon(
-                  Icons.play_circle_filled,
-                  color: AppColors.textOnPrimary,
-                  size: 48,
-                ),
-              ),
-            ),
-            
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Course Title
-                  Text(
-                    title,
-                    style: AppTextStyles.labelLarge,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  
-                  // Instructor
-                  Text(
-                    'by $instructor',
-                    style: AppTextStyles.bodySmall,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  
-                  // Duration and Progress
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time,
-                        size: 16,
-                        color: AppColors.textTertiary,
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      Text(
-                        duration,
-                        style: AppTextStyles.caption,
-                      ),
-                      const Spacer(),
-                      Text(
-                        '${(progress * 100).toInt()}%',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  
-                  // Progress Bar
-                  LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: AppColors.surfaceVariant,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
-                    ),
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  // ... CourseCard implementation
 }
+*/
 
 class FeatureCard extends StatelessWidget {
   final String title;
@@ -199,129 +89,23 @@ class FeatureCard extends StatelessWidget {
   }
 }
 
+// ProgressCard widget removed to simplify the UI
+// Uncomment this widget if you need progress tracking functionality in the future
+
+/*
 class ProgressCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final double progress;
-  final String progressText;
-  final IconData icon;
-
-  const ProgressCard({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.progress,
-    required this.progressText,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: const [AppShadows.soft],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              gradient: AppColors.successGradient,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: Icon(
-              icon,
-              color: AppColors.textOnPrimary,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTextStyles.labelLarge,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  subtitle,
-                  style: AppTextStyles.bodySmall,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  children: [
-                    Expanded(
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        backgroundColor: AppColors.surfaceVariant,
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppColors.success,
-                        ),
-                        borderRadius: BorderRadius.circular(AppRadius.sm),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Text(
-                      progressText,
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.success,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // ... ProgressCard implementation
 }
+*/
 
+// CategoryChip widget removed to simplify the UI
+// Uncomment this widget if you need category filtering functionality in the future
+
+/*
 class CategoryChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const CategoryChip({
-    super.key,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surfaceVariant,
-          borderRadius: BorderRadius.circular(AppRadius.circular),
-          border: isSelected
-              ? null
-              : Border.all(color: AppColors.surfaceVariant),
-        ),
-        child: Text(
-          label,
-          style: AppTextStyles.labelMedium.copyWith(
-            color: isSelected ? AppColors.textOnPrimary : AppColors.textSecondary,
-          ),
-        ),
-      ),
-    );
-  }
+  // ... CategoryChip implementation
 }
+*/
 
 class CustomSearchBar extends StatelessWidget {
   final String hintText;

@@ -148,7 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             
-            // Statistics Cards
+            // Account Information
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.lg),
@@ -156,79 +156,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Learning Statistics',
+                      'Account Information',
                       style: AppTextStyles.h4,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     
-                    // Statistics Grid
-                    GridView.count(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
-                      crossAxisSpacing: AppSpacing.md,
-                      mainAxisSpacing: AppSpacing.md,
-                      childAspectRatio: 1.3,
-                      children: [
-                        _buildStatCard(
-                          'Courses Completed',
-                          '12',
-                          Icons.school,
-                          AppColors.success,
-                        ),
-                        _buildStatCard(
-                          'Total Study Time',
-                          '84h',
-                          Icons.access_time,
-                          AppColors.secondary,
-                        ),
-                        _buildStatCard(
-                          'Certificates Earned',
-                          '8',
-                          Icons.workspace_premium,
-                          AppColors.warning,
-                        ),
-                        _buildStatCard(
-                          'Current Streak',
-                          '15 days',
-                          Icons.local_fire_department,
-                          AppColors.error,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            // Progress Overview
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Recent Progress',
-                      style: AppTextStyles.h4,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    
-                    ProgressCard(
-                      title: 'Monthly Learning Goal',
-                      subtitle: '18 of 25 hours completed this month',
-                      progress: 0.72,
-                      progressText: '72%',
-                      icon: Icons.trending_up,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    
-                    ProgressCard(
-                      title: 'Course Completion Rate',
-                      subtitle: '8 out of 10 courses completed',
-                      progress: 0.80,
-                      progressText: '80%',
-                      icon: Icons.check_circle,
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        boxShadow: const [AppShadows.soft],
+                      ),
+                      child: Column(
+                        children: [
+                          _buildInfoRow('Email', user?.email ?? 'No email'),
+                          const SizedBox(height: AppSpacing.md),
+                          _buildInfoRow('User ID', user?.id.substring(0, 8) ?? 'N/A'),
+                          const SizedBox(height: AppSpacing.md),
+                          _buildInfoRow(
+                            'Email Verified', 
+                            user?.emailConfirmedAt != null ? 'Verified' : 'Not Verified'
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          _buildInfoRow(
+                            'Account Created', 
+                            user?.createdAt != null 
+                                ? user!.createdAt.toString().split('T')[0]
+                                : 'N/A'
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -376,44 +334,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: const [AppShadows.soft],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 120,
+          child: Text(
+            label,
+            style: AppTextStyles.labelMedium,
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
+        ),
+        Expanded(
+          child: Text(
             value,
-            style: AppTextStyles.h3.copyWith(color: color),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            title,
-            style: AppTextStyles.bodySmall,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
