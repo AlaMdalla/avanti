@@ -319,8 +319,10 @@ lib/
 │   └── theme/           # Theme and styling
 ├── features/
 │   ├── auth/            # Authentication
-│   └── home/            # Home dashboard
+│   ├── home/            # Home dashboard
+│   └── profile/         # User profile and settings
 ├── shared/
+│   ├── navigation/      # App navigation
 │   └── widgets/         # Reusable components
 └── main.dart           # App entry point
 ```

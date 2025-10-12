@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/config/supabase_config.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/screens/auth_screen.dart';
-import 'features/home/screens/home_screen.dart';
+import 'shared/navigation/main_navigation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -69,7 +69,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     if (_user == null) {
       return const AuthScreen();
     } else {
-      return const HomeScreen();
+      return const MainNavigation();
     }
   }
 }

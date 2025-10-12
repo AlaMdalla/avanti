@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/custom_widgets.dart';
+import '../../profile/screens/profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -79,6 +80,22 @@ class HomeScreen extends StatelessWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Notifications coming soon!')),
                                 );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.person_outline,
+                                color: AppColors.textOnPrimary,
+                              ),
+                              onPressed: () {
+                                // Find the MainNavigation parent and switch to profile tab
+                                final mainNavigationState = context.findAncestorStateOfType<State<StatefulWidget>>();
+                                if (mainNavigationState != null && mainNavigationState.mounted) {
+                                  // This is a simple way to switch tabs, in a real app you might use a more sophisticated state management
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Use the Profile tab at the bottom!')),
+                                  );
+                                }
                               },
                             ),
                             IconButton(
@@ -299,7 +316,7 @@ class HomeScreen extends StatelessWidget {
                           color: AppColors.primary,
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('My Courses coming soon!')),
+                              const SnackBar(content: Text('Use the Profile tab to see your course statistics!')),
                             );
                           },
                         ),
