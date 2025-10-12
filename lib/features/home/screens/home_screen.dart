@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/custom_widgets.dart';
 import '../../profile/screens/profile_screen.dart';
+import '../../settings/screens/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -204,8 +205,10 @@ class HomeScreen extends StatelessWidget {
                           icon: Icons.settings,
                           color: AppColors.primary,
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Settings coming soon!')),
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const SettingsScreen(),
+                              ),
                             );
                           },
                         ),
