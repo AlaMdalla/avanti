@@ -4,6 +4,9 @@ import 'core/config/supabase_config.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/screens/auth_screen.dart';
 import 'shared/navigation/main_navigation.dart';
+import 'home_screen.dart';
+import 'features/profile/screens/profile_screen.dart';
+import 'features/profile/screens/EditProfile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +27,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Avanti - E-Learning',
+        routes: {
+       // '/': (context) => const HomeScreen(), // Your home screen
+        '/profile': (context) => const ProfileScreen(), // Your profile screen
+        '/edit-profile': (context) => const EditProfileScreen(),
+        // ...other routes...
+      },
       theme: AppTheme.lightTheme,
       home: const AuthWrapper(),
       debugShowCheckedModeBanner: false,

@@ -72,32 +72,20 @@ class HomeScreen extends StatelessWidget {
                         ),
                         Row(
                           children: [
-                            IconButton(
-                              icon: const Icon(
-                                Icons.notifications_outlined,
-                                color: AppColors.textOnPrimary,
-                              ),
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Notifications coming soon!')),
-                                );
-                              },
-                            ),
+
                             IconButton(
                               icon: const Icon(
                                 Icons.person_outline,
                                 color: AppColors.textOnPrimary,
                               ),
                               onPressed: () {
-                                // Find the MainNavigation parent and switch to profile tab
-                                final mainNavigationState = context.findAncestorStateOfType<State<StatefulWidget>>();
-                                if (mainNavigationState != null && mainNavigationState.mounted) {
-                                  // This is a simple way to switch tabs, in a real app you might use a more sophisticated state management
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Use the Profile tab at the bottom!')),
-                                  );
-                                }
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const ProfileScreen(),
+                                  ),
+                                );
                               },
+                              tooltip: 'View Profile',
                             ),
                             IconButton(
                               icon: const Icon(
@@ -115,11 +103,6 @@ class HomeScreen extends StatelessWidget {
                     // Search Bar
                     CustomSearchBar(
                       hintText: 'Search courses, topics...',
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Search feature coming soon!')),
-                        );
-                      },
                     ),
                   ],
                 ),
@@ -179,75 +162,24 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             
-            // Quick Actions
+            // Quick Actions - Only implemented features
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Quick Actions',
-                      style: AppTextStyles.h4,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    GridView.count(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
-                      crossAxisSpacing: AppSpacing.md,
-                      mainAxisSpacing: AppSpacing.md,
-                      childAspectRatio: 1.2,
-                      children: [
-                        FeatureCard(
-                          title: 'Settings',
-                          subtitle: 'App preferences',
-                          icon: Icons.settings,
-                          color: AppColors.primary,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const SettingsScreen(),
-                              ),
-                            );
-                          },
+                padding: const EdgeInsets.all(16.0),
+                child: Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.person, color: Colors.blue),
+                    title: const Text('My Profile'),
+                    subtitle: const Text('View and edit your profile'),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const ProfileScreen(),
                         ),
-                        FeatureCard(
-                          title: 'Help & Support',
-                          subtitle: 'Get help and support',
-                          icon: Icons.help_outline,
-                          color: AppColors.secondary,
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Help & Support coming soon!')),
-                            );
-                          },
-                        ),
-                        FeatureCard(
-                          title: 'Notifications',
-                          subtitle: 'Manage notifications',
-                          icon: Icons.notifications_outlined,
-                          color: AppColors.success,
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Notifications coming soon!')),
-                            );
-                          },
-                        ),
-                        FeatureCard(
-                          title: 'About',
-                          subtitle: 'App information',
-                          icon: Icons.info_outline,
-                          color: AppColors.warning,
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('About page coming soon!')),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
+                      );
+                    },
+                  ),
                 ),
               ),
             ),

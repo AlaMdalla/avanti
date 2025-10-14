@@ -150,3 +150,153 @@ class CustomSearchBar extends StatelessWidget {
     );
   }
 }
+
+// Profile specific widgets
+
+class ProfileAvatar extends StatelessWidget {
+  final String? imageUrl;
+  final double radius;
+  final VoidCallback? onTap;
+  final IconData fallbackIcon;
+
+  const ProfileAvatar({
+    super.key,
+    this.imageUrl,
+    this.radius = 50,
+    this.onTap,
+    this.fallbackIcon = Icons.person,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: CircleAvatar(
+        radius: radius,
+        backgroundColor: AppColors.surface,
+        backgroundImage: imageUrl != null ? NetworkImage(imageUrl!) : null,
+        child: imageUrl == null
+            ? Icon(
+                fallbackIcon,
+                size: radius * 1.2,
+                color: AppColors.primary,
+              )
+            : null,
+      ),
+    );
+  }
+}
+
+class ProfileField extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final VoidCallback? onTap;
+  final bool isEditable;
+
+  const ProfileField({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.icon,
+    this.onTap,
+    this.isEditable = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.border,
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: InkWell(
+        onTap: isEditable ? onTap : null,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value,
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+            if (isEditable)
+              Icon(
+                Icons.edit_outlined,
+                size: 16,
+                color: AppColors.textTertiary,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ProfileCard extends StatelessWidget {
+  final String title;
+  final List<Widget> children;
+  final EdgeInsets? padding;
+
+  const ProfileCard({
+    super.key,
+    required this.title,
+    required this.children,
+    this.padding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: padding ?? const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Text(
+            title,
+            style: AppTextStyles.h5,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            boxShadow: const [AppShadows.soft],
+          ),
+          child: Column(children: children),
+        ),
+      ],
+    );
+  }
+}

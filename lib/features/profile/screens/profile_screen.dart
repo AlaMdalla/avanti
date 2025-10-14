@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/custom_widgets.dart';
 import '../../settings/screens/settings_screen.dart';
+import 'EditProfile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -67,16 +68,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(
-                            Icons.edit,
-                            color: AppColors.textOnPrimary,
-                          ),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Edit profile coming soon!')),
-                            );
-                          },
-                        ),
+  icon: const Icon(
+    Icons.edit,
+    color: AppColors.textOnPrimary,
+  ),
+  onPressed: () {
+    // Navigate to EditProfileScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const EditProfileScreen(),
+      ),
+    );
+  },
+),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.lg),

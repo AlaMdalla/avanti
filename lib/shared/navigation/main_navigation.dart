@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
-
+import '../../features/profile/screens/EditProfile_screen.dart';
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -16,6 +16,7 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const ProfileScreen(),
+    const EditProfileScreen(),
   ];
 
   @override
@@ -53,6 +54,11 @@ class _MainNavigationState extends State<MainNavigation> {
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
               label: 'Profile',
+            ),
+              BottomNavigationBarItem(
+              icon: Icon(Icons.edit_outlined),
+              activeIcon: Icon(Icons.edit),
+              label: 'Edit Profile',
             ),
           ],
         ),

@@ -27,6 +27,7 @@ class AppColors {
   static const Color background = Color(0xFFFAFAFA);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceVariant = Color(0xFFF5F5F5);
+  static const Color border = Color(0xFFE5E7EB); // Gray-200
   
   // Text Colors
   static const Color textPrimary = Color(0xFF1F2937); // Gray-800
@@ -79,6 +80,13 @@ class AppTextStyles {
   
   static const TextStyle h4 = TextStyle(
     fontSize: 20,
+    fontWeight: FontWeight.w600,
+    color: AppColors.textPrimary,
+    height: 1.4,
+  );
+  
+  static const TextStyle h5 = TextStyle(
+    fontSize: 18,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
     height: 1.4,
