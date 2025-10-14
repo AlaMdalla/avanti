@@ -27,7 +27,7 @@ class LessonPage extends StatelessWidget {
           backgroundColor: Colors.indigo,
           elevation: 0,
           title: const Text(
-            "Lessons",
+            "Leçons",
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w600,
@@ -105,7 +105,8 @@ class LessonPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      onTap: () => _openLesson(lesson.type, lesson.contentUrl, context),
+                      onTap: () =>
+                          _openLesson(lesson.type, lesson.contentUrl, context),
                     ),
                   );
                 },
@@ -150,19 +151,27 @@ class LessonPage extends StatelessWidget {
       return;
     }
 
-    if (type.toLowerCase() == 'video') {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
+    final uri = Uri.parse(url);
+
+    switch (type.toLowerCase()) {
+      case 'video':
+      case 'pdf':
+      case 'quiz':
+        // Ouvre la vidéo ou PDF dans l'application externe ou navigateur
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Impossible d’ouvrir ce contenu")),
+          );
+        }
+        break;
+
+      default:
+        // Pour les autres types, on affiche le lien dans un SnackBar
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Impossible d’ouvrir la vidéo")),
+          SnackBar(content: Text("Lien du contenu : $url")),
         );
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Type de leçon : $type")),
-      );
     }
   }
 }

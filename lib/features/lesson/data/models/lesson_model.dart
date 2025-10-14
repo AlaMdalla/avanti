@@ -10,9 +10,9 @@ class LessonModel extends Lesson {
 
   factory LessonModel.fromJson(Map<String, dynamic> json) => LessonModel(
         id: json['id'],
-        module_id: json['module_id'], // ⚠️ bien module_id
+        module_id: json['module_id'],
         title: json['title'],
-        type: json['type'] ?? 'video', // si ton champ type est vide, default 'video'
+        type: json['type'] ?? 'video', 
         description: json['description'],
         contentUrl: json['contentUrl'],
       );

@@ -15,7 +15,7 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
     final response = await client
         .from('lessons')
         .select()
-        .eq('module_id', module_id); // filtre par moduleId
+        .eq('module_id', module_id); 
     return (response as List)
         .map((e) => Lesson.fromJson(e as Map<String, dynamic>))
         .toList();

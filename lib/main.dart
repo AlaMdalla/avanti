@@ -6,7 +6,8 @@ import 'core/config/env.dart';
 import 'features/lesson/domain/usecases/get_lessons_by_module.dart';
 import 'features/lesson/data/datasources/lesson_remote_data_source.dart';
 import 'features/lesson/data/repositories/lesson_repository_impl.dart';
-import 'features/lesson/presentation/pages/lesson_page.dart';
+import 'features/modules/presentation/pages/module_list_page.dart';
+import 'features/lesson/presentation/pages/lesson_form_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +19,7 @@ Future<void> main() async {
     anonKey: Env.supabaseAnonKey,
   );
 
-  // Instancier RemoteDataSource, Repository et UseCase
+  // ⚙️ Préparer les dépendances pour le module Lesson
   final client = Supabase.instance.client;
   final remoteDataSource = LessonRemoteDataSourceImpl(client);
   final repository = LessonRepositoryImpl(remoteDataSource);
@@ -29,21 +30,29 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   final GetLessonsByModule getLessonsUseCase;
-
   const MyApp({super.key, required this.getLessonsUseCase});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: "E-Learning Platform",
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.indigo,
+          foregroundColor: Colors.white,
+          centerTitle: true,
+        ),
       ),
-      home: LessonPage(
-        module_id: 'test',
-        getLessonsUseCase: getLessonsUseCase,
-      ),
+
+      // 🧭 Routes centralisées
+      initialRoute: '/',
+      routes: {
+        '/': (context) => ModuleListPage(getLessonsUseCase: getLessonsUseCase),
+        '/add-lesson': (context) => LessonFormPage(module_id: ''),
+      },
     );
   }
 }
