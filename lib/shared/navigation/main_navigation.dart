@@ -3,6 +3,8 @@ import '../../core/theme/app_theme.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/EditProfile_screen.dart';
+import '../../features/profile/screens/UserListScreen.dart'; // Import UserListScreen
+import '../../features/messages/screens/chat_screen.dart'; // Import ChatScreen
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -17,6 +19,8 @@ class _MainNavigationState extends State<MainNavigation> {
     const HomeScreen(),
     const ProfileScreen(),
     const EditProfileScreen(),
+     UserListScreen(), // Replace placeholder with UserListScreen
+
   ];
 
   @override
@@ -59,6 +63,11 @@ class _MainNavigationState extends State<MainNavigation> {
               icon: Icon(Icons.edit_outlined),
               activeIcon: Icon(Icons.edit),
               label: 'Edit Profile',
+            ),
+                BottomNavigationBarItem(
+              icon: Icon(Icons.chat_bubble_outline),
+              activeIcon: Icon(Icons.chat_bubble),
+              label: 'Messages',
             ),
           ],
         ),

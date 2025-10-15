@@ -105,4 +105,16 @@ class ProfileService {
       return false;
     }
   }
+    Future<List<Profile>> getAllProfiles() async {
+    try {
+      final response = await _supabase
+          .from('profiles')
+          .select();
+
+      return response.map((json) => Profile.fromJson(json)).toList();
+    } catch (e) {
+      print('Error getting profiles: $e');
+      return [];
+    }
+  }
 }
