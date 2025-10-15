@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';  // Add this import
 import '../models/message.dart';
 import '../services/MessageService.dart';
 import '../../profile/services/ProfileService.dart';
-import '../../../core/theme/app_theme.dart';  // Import for AppColors and AppTextStyles
+import '../../../core/theme/app_theme.dart';
 
 class ChatScreen extends StatefulWidget {
   final String currentUserId;
@@ -64,6 +65,20 @@ class _ChatScreenState extends State<ChatScreen> {
       _controller.clear();
       _loadMessages();
     }
+  }
+
+  void _showEmojiPicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => EmojiPicker(
+        onEmojiSelected: (category, emoji) {
+          setState(() {
+            _controller.text += emoji.emoji;
+          });
+          Navigator.pop(context);
+        },
+      ),
+    );
   }
 
   @override
@@ -132,6 +147,15 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             child: Row(
               children: [
+                IconButton(
+                  icon: Icon(Icons.emoji_emotions, color: AppColors.primary),
+                  onPressed: _showEmojiPicker,
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppColors.primary.withOpacity(0.1),
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: TextField(
                     controller: _controller,
