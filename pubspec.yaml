@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+
   flutter:
     sdk: flutter
 
@@ -37,6 +38,7 @@ dependencies:
   supabase_flutter: ^2.5.6
   google_sign_in: ^6.2.1
   image_picker: ^1.0.5
+  path: ^1.8.3
   permission_handler: ^11.1.0
 
 dev_dependencies:

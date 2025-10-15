@@ -47,6 +47,7 @@ class ProfileService {
     String? pseudo,
     String? avatarUrl,
     String? phone,
+    
   }) async {
     final response = await _supabase
         .from('profiles')
