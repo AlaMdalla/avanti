@@ -18,14 +18,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _supabase = Supabase.instance.client;
   final _profileService = ProfileService();
   final _picker = ImagePicker();
-  
+
   // Controllers
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _pseudoController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  
+
   bool _isLoading = false;
   Profile? _currentProfile;
   String? _avatarUrl;
@@ -38,14 +38,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _loadProfile() async {
     setState(() => _isLoading = true);
-    
     try {
       final user = _supabase.auth.currentUser;
       if (user != null) {
-        // Load email from auth
         _emailController.text = user.email ?? '';
-        
-        // Load profile data
         final profile = await _profileService.getProfile(user.id);
         if (profile != null) {
           _currentProfile = profile;
@@ -57,17 +53,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         }
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading profile: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      _showErrorSnack('Error loading profile: $e');
+    } finally {
+      setState(() => _isLoading = false);
     }
-    
-    setState(() => _isLoading = false);
   }
 
   Future<void> _pickAndUploadImage() async {
@@ -75,7 +64,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (picked == null) return;
 
     setState(() => _isLoading = true);
-
     try {
       final file = File(picked.path);
       final user = _supabase.auth.currentUser;
@@ -85,127 +73,77 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final filename = '${user.id}_avatar$ext';
       final pathInBucket = 'avatars/$filename';
 
-      // Upload (upsert true so re-upload replaces)
       await _supabase.storage.from('avatars').upload(
-        pathInBucket,
-        file,
-        fileOptions: const FileOptions(upsert: true),
-      );
+            pathInBucket,
+            file,
+            fileOptions: const FileOptions(upsert: true),
+          );
 
-      // Get public URL
       final publicUrl = _supabase.storage.from('avatars').getPublicUrl(pathInBucket);
-
-      // Update profile with new avatar URL
       await _supabase.from('profiles').update({'avatar_url': publicUrl}).eq('id', user.id);
 
-      setState(() {
-        _avatarUrl = publicUrl;
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Avatar uploaded'), backgroundColor: Colors.green),
-        );
-      }
+      setState(() => _avatarUrl = publicUrl);
+      _showSuccessSnack('Avatar uploaded successfully!');
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Upload failed: $e'), backgroundColor: Colors.red),
-        );
-      }
+      _showErrorSnack('Upload failed: $e');
     } finally {
       setState(() => _isLoading = false);
     }
   }
-// ...existing code...
 
-Future<void> _updateProfile() async {
-  if (!_formKey.currentState!.validate()) return;
-  
-  setState(() => _isLoading = true);
-  
-  try {
-    final user = _supabase.auth.currentUser;
-    if (user == null) throw Exception('User not authenticated');
+  Future<void> _updateProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
 
-    // Update email in auth if changed
-    if (_emailController.text.trim() != user.email) {
-      await _supabase.auth.updateUser(
-        UserAttributes(email: _emailController.text.trim()),
-      );
-    }
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) throw Exception('User not authenticated');
 
-    // Update or create profile
-    Profile updatedProfile;
-    if (_currentProfile != null) {
-      updatedProfile = await _profileService.updateProfile(
-        userId: user.id,
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        pseudo: _pseudoController.text.trim(),
-        phone: _phoneController.text.trim().isNotEmpty 
-            ? _phoneController.text.trim() 
-            : null,
-        avatarUrl: _avatarUrl,
-      );
-    } else {
-      updatedProfile = await _profileService.createProfile(
-        userId: user.id,
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        pseudo: _pseudoController.text.trim(),
-        phone: _phoneController.text.trim().isNotEmpty 
-            ? _phoneController.text.trim() 
-            : null,
-        avatarUrl: _avatarUrl,
-      );
-    }
-    
-    if (mounted) {
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated successfully!'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      if (_emailController.text.trim() != user.email) {
+        await _supabase.auth.updateUser(UserAttributes(email: _emailController.text.trim()));
+      }
 
-      // Wait a moment for user to see the success message
-      await Future.delayed(const Duration(milliseconds: 500));
+      if (_currentProfile != null) {
+        await _profileService.updateProfile(
+          userId: user.id,
+          firstName: _firstNameController.text.trim(),
+          lastName: _lastNameController.text.trim(),
+          pseudo: _pseudoController.text.trim(),
+          phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
+          avatarUrl: _avatarUrl,
+        );
+      } else {
+        await _profileService.createProfile(
+          userId: user.id,
+          firstName: _firstNameController.text.trim(),
+          lastName: _lastNameController.text.trim(),
+          pseudo: _pseudoController.text.trim(),
+          phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
+          avatarUrl: _avatarUrl,
+        );
+      }
 
-      // Navigate to profile screen and remove all previous routes
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        '/profile', // Make sure this route exists in your app
-        (route) => route.isFirst, // Keep only the first route (usually home)
-      );
-      
-      // Alternative: If you want to go back to previous screen instead
-      // Navigator.pop(context, updatedProfile);
-      
-      // Alternative: If you have a specific profile screen widget
-      // Navigator.of(context).pushReplacement(
-      //   MaterialPageRoute(
-      //     builder: (context) => ProfileScreen(profile: updatedProfile),
-      //   ),
-      // );
-    }
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error updating profile: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      _showSuccessSnack('Profile updated successfully!');
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (mounted) Navigator.pushReplacementNamed(context, '/profile');
+    } catch (e) {
+      _showErrorSnack('Error updating profile: $e');
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
-  
-  setState(() => _isLoading = false);
-}
 
-// ...existing code...
+  void _showErrorSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  void _showSuccessSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
+    );
+  }
 
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) return 'Email is required';
@@ -214,167 +152,185 @@ Future<void> _updateProfile() async {
   }
 
   String? _validateRequired(String? value, String fieldName) {
-    if (value == null || value.trim().isEmpty) {
-      return '$fieldName is required';
-    }
+    if (value == null || value.trim().isEmpty) return '$fieldName is required';
     return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    const primaryColor = Color(0xFF4F46E5);
+    const primaryLight = Color(0xFF6366F1);
+    const textPrimary = Color(0xFF1F2937);
+    const textSecondary = Color(0xFF6B7280);
+
     return Scaffold(
+      backgroundColor: const Color(0xFFFAFAFA),
       appBar: AppBar(
-        title: const Text('Edit Profile'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: primaryColor,
+        centerTitle: true,
+        title: const Text(
+          'Edit Profile',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: textPrimary),
+        ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.all(16),
+      body: Stack(
+        children: [
+          _isLoading
+              ? const Center(child: CircularProgressIndicator(color: primaryColor))
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
                       children: [
-                        // Avatar with edit icon
-                        Center(
-                          child: GestureDetector(
-                            onTap: _isLoading ? null : _pickAndUploadImage,
-                            child: Stack(
-                              children: [
-                                CircleAvatar(
-                                  radius: 50,
-                                  backgroundColor: Colors.grey,
-                                  backgroundImage: _avatarUrl != null ? NetworkImage(_avatarUrl!) : null,
-                                  child: _avatarUrl == null ? const Icon(Icons.person, size: 50, color: Colors.white) : null,
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    decoration: const BoxDecoration(
-                                      color: Colors.blue,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.camera_alt,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
+                        GestureDetector(
+                          onTap: _pickAndUploadImage,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: LinearGradient(
+                                    colors: [primaryColor, primaryLight],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
                                 ),
-                              ],
+                                child: CircleAvatar(
+                                  radius: 60,
+                                  backgroundColor: Colors.white,
+                                  backgroundImage: _avatarUrl != null ? NetworkImage(_avatarUrl!) : null,
+                                  child: _avatarUrl == null
+                                      ? const Icon(Icons.person, size: 60, color: textSecondary)
+                                      : null,
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 6,
+                                right: 6,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: const BoxDecoration(
+                                    color: primaryColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+
+                        _buildTextField(
+                          controller: _firstNameController,
+                          label: 'First Name *',
+                          icon: Icons.person_outline,
+                          validator: (v) => _validateRequired(v, 'First Name'),
+                        ),
+                        _buildTextField(
+                          controller: _lastNameController,
+                          label: 'Last Name *',
+                          icon: Icons.person_outline,
+                          validator: (v) => _validateRequired(v, 'Last Name'),
+                        ),
+                        _buildTextField(
+                          controller: _pseudoController,
+                          label: 'Username / Pseudo *',
+                          icon: Icons.alternate_email,
+                          validator: (v) => _validateRequired(v, 'Username'),
+                        ),
+                        _buildTextField(
+                          controller: _emailController,
+                          label: 'Email *',
+                          icon: Icons.email_outlined,
+                          validator: _validateEmail,
+                        ),
+                        _buildTextField(
+                          controller: _phoneController,
+                          label: 'Phone Number',
+                          icon: Icons.phone_outlined,
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _updateProfile,
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Ink(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [primaryColor, primaryLight],
+                                  begin: Alignment.centerLeft,
+                                  end: Alignment.centerRight,
+                                ),
+                                borderRadius: BorderRadius.all(Radius.circular(12)),
+                              ),
+                              child: Container(
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  'Save Changes',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 32),
-                        
-                        // Form fields
-                        TextFormField(
-                          controller: _firstNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'First Name *',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.person_outline),
-                          ),
-                          validator: (value) => _validateRequired(value, 'First Name'),
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        TextFormField(
-                          controller: _lastNameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Last Name *',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.person_outline),
-                          ),
-                          validator: (value) => _validateRequired(value, 'Last Name'),
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        TextFormField(
-                          controller: _pseudoController,
-                          decoration: const InputDecoration(
-                            labelText: 'Username/Pseudo *',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.alternate_email),
-                          ),
-                          validator: (value) => _validateRequired(value, 'Username'),
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        TextFormField(
-                          controller: _emailController,
-                          decoration: const InputDecoration(
-                            labelText: 'Email *',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.email_outlined),
-                          ),
-                          validator: _validateEmail,
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        TextFormField(
-                          controller: _phoneController,
-                          decoration: const InputDecoration(
-                            labelText: 'Phone Number',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.phone_outlined),
-                          ),
-                          keyboardType: TextInputType.phone,
-                        ),
-                        
-                        const SizedBox(height: 32),
                       ],
                     ),
                   ),
-                  
-                  // Update button at the bottom
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _updateProfile,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        elevation: 2,
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.save, size: 20),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Update Profile',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    String? Function(String?)? validator,
+  }) {
+    const textPrimary = Color(0xFF1F2937);
+    const textSecondary = Color(0xFF6B7280);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        validator: validator,
+        style: const TextStyle(color: textPrimary, fontSize: 16),
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: textSecondary),
+          labelText: label,
+          labelStyle: const TextStyle(color: textSecondary),
+          filled: true,
+          fillColor: Colors.white,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+          ),
+        ),
+      ),
     );
   }
 
