@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';  // Add this import
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import '../models/message.dart';
 import '../services/MessageService.dart';
 import '../../profile/services/ProfileService.dart';
@@ -50,7 +50,11 @@ class _ChatScreenState extends State<ChatScreen> {
   void _loadUserName() async {
     final profile = await _profileService.getProfile(widget.otherUserId);
     setState(() {
-      _otherUserName = profile?.pseudo ?? '${profile?.firstName ?? ''} ${profile?.lastName ?? ''}'.trim() ?? 'User';
+      _otherUserName = profile?.pseudo?.isNotEmpty == true
+          ? profile!.pseudo!
+          : '${profile?.firstName ?? ''} ${profile?.lastName ?? ''}'.trim().isNotEmpty
+              ? '${profile?.firstName ?? ''} ${profile?.lastName ?? ''}'.trim()
+              : 'User';
       _otherUserAvatarUrl = profile?.avatarUrl;
     });
   }
@@ -70,6 +74,10 @@ class _ChatScreenState extends State<ChatScreen> {
   void _showEmojiPicker() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => EmojiPicker(
         onEmojiSelected: (category, emoji) {
           setState(() {
@@ -81,39 +89,85 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  // ...existing code...
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: CircleAvatar(
-          backgroundImage: _otherUserAvatarUrl != null ? NetworkImage(_otherUserAvatarUrl!) : null,
-          child: _otherUserAvatarUrl == null ? Text(_otherUserName[0].toUpperCase(), style: AppTextStyles.caption.copyWith(color: AppColors.textOnPrimary)) : null,
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.textOnPrimary,
-          radius: 16,
-        ),
-        title: Text('Chat with $_otherUserName', style: AppTextStyles.h4),
         backgroundColor: AppColors.primary,
-        elevation: 0,
+        elevation: 4,
+        shadowColor: AppColors.primary.withOpacity(0.4),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: AppColors.textOnPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: AppColors.surface,
+              backgroundImage: _otherUserAvatarUrl != null ? NetworkImage(_otherUserAvatarUrl!) : null,
+              child: _otherUserAvatarUrl == null
+                  ? Text(
+                      _otherUserName.isNotEmpty ? _otherUserName[0].toUpperCase() : '?',
+                      style: AppTextStyles.caption.copyWith(color: AppColors.primary),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              _otherUserName,
+              style: AppTextStyles.h4.copyWith(color: AppColors.textOnPrimary),
+            ),
+          ],
+        ),
       ),
-      body: Column(
+       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(AppSpacing.md),
+              reverse: true,
+              physics: const BouncingScrollPhysics(),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
-                final message = _messages[index];
+                final message = _messages[_messages.length - 1 - index];
                 final isCurrentUser = message.senderId == widget.currentUserId;
                 return Align(
-                  alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment:
+                      isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.75,
+                    ),
                     decoration: BoxDecoration(
-                      color: isCurrentUser ? AppColors.primary : AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      gradient: isCurrentUser
+                          ? LinearGradient(
+                              colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+                              begin: Alignment.topRight,
+                              end: Alignment.bottomLeft,
+                            )
+                          : LinearGradient(
+                              colors: [
+                                AppColors.surfaceVariant,
+                                AppColors.surfaceVariant.withOpacity(0.8)
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(18),
+                        topRight: const Radius.circular(18),
+                        bottomLeft:
+                            isCurrentUser ? const Radius.circular(18) : Radius.zero,
+                        bottomRight:
+                            isCurrentUser ? Radius.zero : const Radius.circular(18),
+                      ),
                       boxShadow: [AppShadows.soft],
                     ),
                     child: Column(
@@ -122,14 +176,19 @@ class _ChatScreenState extends State<ChatScreen> {
                         Text(
                           message.content,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: isCurrentUser ? AppColors.textOnPrimary : AppColors.textPrimary,
+                            color: isCurrentUser
+                                ? AppColors.textOnPrimary
+                                : AppColors.textPrimary,
                           ),
                         ),
-                        const SizedBox(height: AppSpacing.xs),
+                        const SizedBox(height: 4),
                         Text(
                           '${isCurrentUser ? 'You' : _otherUserName} • ${message.timestamp}',
                           style: AppTextStyles.caption.copyWith(
-                            color: isCurrentUser ? AppColors.textOnPrimary.withOpacity(0.7) : AppColors.textTertiary,
+                            color: isCurrentUser
+                                ? AppColors.textOnPrimary.withOpacity(0.8)
+                                : AppColors.textTertiary,
+                            fontSize: 10,
                           ),
                         ),
                       ],
@@ -140,48 +199,62 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md, vertical: AppSpacing.sm),
             decoration: BoxDecoration(
               color: AppColors.surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
               boxShadow: [AppShadows.soft],
             ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(Icons.emoji_emotions, color: AppColors.primary),
-                  onPressed: _showEmojiPicker,
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.primary.withOpacity(0.1),
-                    padding: const EdgeInsets.all(AppSpacing.md),
+            child: SafeArea(
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.emoji_emotions_outlined, color: AppColors.primary),
+                    onPressed: _showEmojiPicker,
                   ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: 'Type a message',
-                      hintStyle: AppTextStyles.bodySmall,
-                      filled: true,
-                      fillColor: AppColors.surfaceVariant,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.circular),
-                        borderSide: BorderSide.none,
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceVariant,
+                        borderRadius: BorderRadius.circular(24),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
+                      child: TextField(
+                        controller: _controller,
+                        textCapitalization: TextCapitalization.sentences,
+                        decoration: InputDecoration(
+                          hintText: 'Type a message...',
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                IconButton(
-                  icon: Icon(Icons.send, color: AppColors.primary),
-                  onPressed: _sendMessage,
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.primary.withOpacity(0.1),
-                    padding: const EdgeInsets.all(AppSpacing.md),
+                  const SizedBox(width: 6),
+                  InkWell(
+                    onTap: _sendMessage,
+                    borderRadius: BorderRadius.circular(30),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          )
+                        ],
+                      ),
+                      child: Icon(Icons.send_rounded,
+                          color: AppColors.textOnPrimary, size: 22),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
