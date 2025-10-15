@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:e_learning_project/features/lesson/presentation/pages/lesson_form_page.dart';
 import '../../domain/usecases/get_lessons_by_module.dart';
 import '../bloc/lesson_bloc.dart';
 import '../bloc/lesson_event.dart';
 import '../bloc/lesson_state.dart';
+import 'package:e_learning_project/features/lesson/domain/entities/lesson.dart';
 
 class LessonPage extends StatelessWidget {
   final String module_id;
@@ -19,8 +22,7 @@ class LessonPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          LessonBloc(getLessonsUseCase)..add(LoadLessons(module_id)),
+      create: (_) => LessonBloc(getLessonsUseCase)..add(LoadLessons(module_id)),
       child: Scaffold(
         backgroundColor: Colors.grey[100],
         appBar: AppBar(
@@ -42,7 +44,6 @@ class LessonPage extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             } else if (state is LessonLoaded) {
               final lessons = state.lessons;
-
               return ListView.builder(
                 padding: const EdgeInsets.all(16),
                 itemCount: lessons.length,
@@ -67,10 +68,7 @@ class LessonPage extends StatelessWidget {
                       contentPadding: const EdgeInsets.all(16),
                       leading: CircleAvatar(
                         backgroundColor: Colors.indigo[50],
-                        child: Icon(
-                          _getLessonIcon(lesson.type),
-                          color: Colors.indigo,
-                        ),
+                        child: Icon(_getLessonIcon(lesson.type), color: Colors.indigo),
                       ),
                       title: Text(
                         lesson.title,
@@ -81,32 +79,65 @@ class LessonPage extends StatelessWidget {
                       ),
                       subtitle: Padding(
                         padding: const EdgeInsets.only(top: 6.0),
-                        child: Text(
-                          lesson.description,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[700],
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              lesson.description,
+                              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                            ),
+                            if (lesson.duration != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                "Durée : ${formatDuration(lesson.duration!)}",
+                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.indigo.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          lesson.type.toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.indigo,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.indigo.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              lesson.type.toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.indigo,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
                           ),
-                        ),
+                          IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.orange),
+                            onPressed: () async {
+                              final updated = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => LessonFormPage(
+                                    module_id: module_id,
+                                    lesson: lesson,
+                                  ),
+                                ),
+                              );
+                              if (updated == true) {
+                                context.read<LessonBloc>().add(LoadLessons(module_id));
+                              }
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _confirmDeleteLesson(context, lesson.id),
+                          ),
+                        ],
                       ),
-                      onTap: () =>
-                          _openLesson(lesson.type, lesson.contentUrl, context),
+                      onTap: () => _openLesson(lesson.type, lesson.contentUrl, context),
                     ),
                   );
                 },
@@ -115,16 +146,27 @@ class LessonPage extends StatelessWidget {
               return Center(
                 child: Text(
                   state.message,
-                  style: const TextStyle(
-                    color: Colors.redAccent,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               );
             }
             return const SizedBox.shrink();
           },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            final added = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => LessonFormPage(module_id: module_id),
+              ),
+            );
+            if (added == true) {
+              context.read<LessonBloc>().add(LoadLessons(module_id));
+            }
+          },
+          backgroundColor: Colors.indigo,
+          child: const Icon(Icons.add),
         ),
       ),
     );
@@ -150,28 +192,49 @@ class LessonPage extends StatelessWidget {
       );
       return;
     }
-
     final uri = Uri.parse(url);
-
-    switch (type.toLowerCase()) {
-      case 'video':
-      case 'pdf':
-      case 'quiz':
-        // Ouvre la vidéo ou PDF dans l'application externe ou navigateur
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Impossible d’ouvrir ce contenu")),
-          );
-        }
-        break;
-
-      default:
-        // Pour les autres types, on affiche le lien dans un SnackBar
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Lien du contenu : $url")),
-        );
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Impossible d’ouvrir ce contenu")),
+      );
     }
   }
+
+  void _confirmDeleteLesson(BuildContext context, String lessonId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Supprimer la leçon'),
+        content: const Text('Voulez-vous vraiment supprimer cette leçon ?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Supprimer'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final client = Supabase.instance.client;
+      await client.from('lessons').delete().eq('id', lessonId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('🗑️ Leçon supprimée')),
+      );
+      context.read<LessonBloc>().add(LoadLessons(module_id));
+    }
+  }
+}
+
+String formatDuration(int seconds) {
+  final duration = Duration(seconds: seconds);
+  String twoDigits(int n) => n.toString().padLeft(2, '0');
+  final hours = twoDigits(duration.inHours);
+  final minutes = twoDigits(duration.inMinutes.remainder(60));
+  final secs = twoDigits(duration.inSeconds.remainder(60));
+  return duration.inHours > 0 ? "$hours:$minutes:$secs" : "$minutes:$secs";
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:e_learning_project/features/lesson/domain/entities/lesson.dart';
 
 class LessonFormPage extends StatefulWidget {
   final String module_id;
+  final Lesson? lesson; // Si null, ajout ; sinon modification
 
-  const LessonFormPage({super.key, required this.module_id});
+  const LessonFormPage({super.key, required this.module_id, this.lesson});
 
   @override
   State<LessonFormPage> createState() => _LessonFormPageState();
@@ -15,31 +17,63 @@ class _LessonFormPageState extends State<LessonFormPage> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _contentUrlController = TextEditingController();
+  final _durationController = TextEditingController();
 
-  // Nouvelle variable pour le type
   String _selectedType = 'video';
   final List<String> _types = ['video', 'pdf', 'quiz'];
 
   bool _isLoading = false;
 
-  Future<void> _addLesson() async {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.lesson != null) {
+      _titleController.text = widget.lesson!.title;
+      _descriptionController.text = widget.lesson!.description;
+      _contentUrlController.text = widget.lesson!.contentUrl ?? '';
+      _durationController.text = widget.lesson!.duration?.toString() ?? '';
+      _selectedType = widget.lesson!.type;
+    }
+  }
+
+  Future<void> _saveLesson() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
       final client = Supabase.instance.client;
-      await client.from('lessons').insert({
-        'title': _titleController.text,
-        'description': _descriptionController.text,
-        'type': _selectedType, // Utilisation du Dropdown
-        'contentUrl': _contentUrlController.text,
-        'module_id': widget.module_id,
-      });
+
+      if (widget.lesson == null) {
+        // Ajouter
+        await client.from('lessons').insert({
+          'title': _titleController.text,
+          'description': _descriptionController.text,
+          'type': _selectedType,
+          'content_url': _contentUrlController.text,
+          'module_id': widget.module_id,
+          'duration': int.tryParse(_durationController.text),
+          'updated_at': DateTime.now().toIso8601String(),
+        });
+      } else {
+        // Modifier
+        await client.from('lessons').update({
+          'title': _titleController.text,
+          'description': _descriptionController.text,
+          'type': _selectedType,
+          'content_url': _contentUrlController.text,
+          'duration': int.tryParse(_durationController.text),
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('id', widget.lesson!.id);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('✅ Leçon ajoutée avec succès !')),
+          SnackBar(
+            content: Text(widget.lesson == null
+                ? '✅ Leçon ajoutée !'
+                : '✅ Leçon modifiée !'),
+          ),
         );
         Navigator.pop(context, true);
       }
@@ -53,9 +87,21 @@ class _LessonFormPageState extends State<LessonFormPage> {
   }
 
   @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _contentUrlController.dispose();
+    _durationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Ajouter une leçon")),
+      appBar: AppBar(
+        title: Text(widget.lesson == null ? "Ajouter une leçon" : "Modifier la leçon"),
+        backgroundColor: Colors.indigo,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -82,7 +128,6 @@ class _LessonFormPageState extends State<LessonFormPage> {
                     value == null || value.isEmpty ? "Entrez une description" : null,
               ),
               const SizedBox(height: 16),
-              // Dropdown pour le type
               InputDecorator(
                 decoration: const InputDecoration(
                   labelText: "Type de leçon",
@@ -91,18 +136,12 @@ class _LessonFormPageState extends State<LessonFormPage> {
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: _selectedType,
-                    items: _types.map((type) {
-                      return DropdownMenuItem(
-                        value: type,
-                        child: Text(type.toUpperCase()),
-                      );
-                    }).toList(),
+                    items: _types
+                        .map((type) =>
+                            DropdownMenuItem(value: type, child: Text(type.toUpperCase())))
+                        .toList(),
                     onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedType = value;
-                        });
-                      }
+                      if (value != null) setState(() => _selectedType = value);
                     },
                   ),
                 ),
@@ -115,17 +154,26 @@ class _LessonFormPageState extends State<LessonFormPage> {
                   border: OutlineInputBorder(),
                 ),
               ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _durationController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: "Durée (en secondes)",
+                  border: OutlineInputBorder(),
+                ),
+              ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
-                onPressed: _isLoading ? null : _addLesson,
+                onPressed: _isLoading ? null : _saveLesson,
                 icon: _isLoading
                     ? const SizedBox(
                         height: 18,
                         width: 18,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Icon(Icons.add),
-                label: const Text("Ajouter la leçon"),
+                    : Icon(widget.lesson == null ? Icons.add : Icons.edit),
+                label: Text(widget.lesson == null ? "Ajouter la leçon" : "Modifier la leçon"),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   backgroundColor: Colors.indigo,

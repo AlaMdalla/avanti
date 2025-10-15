@@ -8,8 +8,8 @@ class LessonRepositoryImpl implements LessonRepository {
   LessonRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<Lesson>> getLessonsByModule(String module_id) {
-    return remoteDataSource.fetchLessons(module_id);
+  Future<List<Lesson>> getLessonsByModule(String moduleId) {
+    return remoteDataSource.fetchLessons(moduleId);
   }
 
   @override
@@ -24,16 +24,16 @@ class LessonRepositoryImpl implements LessonRepository {
 
   @override
   Future<void> addLesson(Lesson lesson) async {
-    print('Ajout de la leçon : ${lesson.title}');
+    await remoteDataSource.addLesson(lesson);
+  }
+
+  @override
+  Future<void> deleteLesson(String lessonId) {
+    return remoteDataSource.deleteLesson(lessonId);
   }
 
   @override
   Future<void> updateLesson(Lesson lesson) async {
-    print('Mise à jour de la leçon : ${lesson.id}');
-  }
-
-  @override
-  Future<void> deleteLesson(String lessonId) async {
-    print('Suppression de la leçon : $lessonId');
+    await remoteDataSource.updateLesson(lesson);
   }
 }
