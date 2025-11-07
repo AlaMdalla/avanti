@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/course.dart';
 import '../services/course_service.dart';
 import 'course_form_screen.dart';
+import '../../quiz/screens/quiz_list_screen.dart';
 
 class CourseViewScreen extends StatefulWidget {
   final String courseId;
@@ -104,6 +105,19 @@ class _CourseViewScreenState extends State<CourseViewScreen> {
                 },
                 icon: const Icon(Icons.edit),
                 label: const Text('Edit'),
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => QuizListScreen(courseId: course.id, courseTitle: 'Quizzes: ${course.title}'),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.quiz_outlined),
+                label: const Text('Quizzes'),
               ),
             ],
           );
