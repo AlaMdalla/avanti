@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+// Tes imports internes
 import 'package:avanti_mobile/features/quiz/screens/quiz_screen.dart';
-
+import 'package:avanti_mobile/features/profile/screens/profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -37,8 +38,6 @@ class HomeScreen extends StatelessWidget {
         .from('courses')
         .select()
         .order('created_at', ascending: false);
-
-    // Convertir la réponse dynamique en List<Map<String, dynamic>>
     return List<Map<String, dynamic>>.from(response);
   }
 
@@ -106,6 +105,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -221,6 +221,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+
             GridView.count(
               crossAxisCount: 2,
               crossAxisSpacing: 16,
@@ -228,10 +229,22 @@ class HomeScreen extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _buildFeatureCard(context, 'Profile', Icons.person,
-                    'Manage your profile', () {}),
-                _buildFeatureCard(context, 'Settings', Icons.settings,
-                    'App preferences', () {}),
+                _buildFeatureCard(
+                  context,
+                  'Profile',
+                  Icons.person,
+                  'Manage your profile',
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ProfileScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildFeatureCard(
+                    context, 'Settings', Icons.settings, 'App preferences', () {}),
                 _buildFeatureCard(
                     context, 'Data', Icons.storage, 'View your data', () {}),
                 _buildFeatureCard(
@@ -244,7 +257,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // 🔹 Widget utilitaires
+  // 🔹 Widgets utilitaires
   Widget _buildInfoRow(String label, String value) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,8 +294,8 @@ class HomeScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 title,
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               Text(
