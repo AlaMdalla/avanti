@@ -5,6 +5,7 @@ import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/EditProfile_screen.dart';
 import '../../features/profile/screens/UserListScreen.dart'; // Import UserListScreen
 import '../../features/messages/screens/chat_screen.dart'; // Import ChatScreen
+import '../../features/course/screens/course_list_screen.dart';
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -17,10 +18,10 @@ class _MainNavigationState extends State<MainNavigation> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
+    const CourseListScreen(),
     const ProfileScreen(),
     const EditProfileScreen(),
-     UserListScreen(), // Replace placeholder with UserListScreen
-
+    UserListScreen(),
   ];
 
   @override
@@ -55,16 +56,21 @@ class _MainNavigationState extends State<MainNavigation> {
               label: 'Home',
             ),
             BottomNavigationBarItem(
+              icon: Icon(Icons.menu_book_outlined),
+              activeIcon: Icon(Icons.menu_book),
+              label: 'Courses',
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
               label: 'Profile',
             ),
-              BottomNavigationBarItem(
+            BottomNavigationBarItem(
               icon: Icon(Icons.edit_outlined),
               activeIcon: Icon(Icons.edit),
               label: 'Edit Profile',
             ),
-                BottomNavigationBarItem(
+            BottomNavigationBarItem(
               icon: Icon(Icons.chat_bubble_outline),
               activeIcon: Icon(Icons.chat_bubble),
               label: 'Messages',

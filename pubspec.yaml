@@ -42,6 +42,7 @@ dependencies:
   path: ^1.8.3
   permission_handler: ^11.1.0
   emoji_picker_flutter: ^1.6.3
+  equatable: ^2.0.5
 
 
 dev_dependencies:

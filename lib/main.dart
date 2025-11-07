@@ -7,6 +7,8 @@ import 'shared/navigation/main_navigation.dart';
 import 'home_screen.dart';
 import 'features/profile/screens/profile_screen.dart';
 import 'features/profile/screens/EditProfile_screen.dart';
+import 'features/course/screens/course_list_screen.dart';
+import 'features/course/screens/course_form_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +33,8 @@ class MyApp extends StatelessWidget {
        // '/': (context) => const HomeScreen(), // Your home screen
         '/profile': (context) => const ProfileScreen(), // Your profile screen
         '/edit-profile': (context) => const EditProfileScreen(),
+  '/courses': (context) => const CourseListScreen(),
+  '/courses/new': (context) => const CourseFormScreen(),
         // ...other routes...
       },
       theme: AppTheme.lightTheme,

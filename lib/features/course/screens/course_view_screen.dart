@@ -1,0 +1,114 @@
+import 'package:flutter/material.dart';
+import '../models/course.dart';
+import '../services/course_service.dart';
+import 'course_form_screen.dart';
+
+class CourseViewScreen extends StatefulWidget {
+  final String courseId;
+  const CourseViewScreen({super.key, required this.courseId});
+
+  @override
+  State<CourseViewScreen> createState() => _CourseViewScreenState();
+}
+
+class _CourseViewScreenState extends State<CourseViewScreen> {
+  final _service = CourseService();
+  late Future<Course> _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = _service.getById(widget.courseId);
+  }
+
+  Future<void> _reload() async {
+    setState(() {
+      _future = _service.getById(widget.courseId);
+    });
+  }
+
+  Future<void> _delete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: const Text('Delete course'),
+        content: const Text('Are you sure you want to delete this course?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Delete')),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    try {
+      await _service.delete(widget.courseId);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Course'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _reload,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            onPressed: _delete,
+          ),
+        ],
+      ),
+      body: FutureBuilder<Course>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          final course = snapshot.data;
+          if (course == null) return const Center(child: Text('Not found'));
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              if (course.imageUrl != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(course.imageUrl!, height: 180, fit: BoxFit.cover),
+                ),
+              const SizedBox(height: 16),
+              Text(course.title, style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
+              Text(course.description ?? 'No description'),
+              const SizedBox(height: 24),
+              Text('Instructor: ${course.instructorId}', style: Theme.of(context).textTheme.labelMedium),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CourseFormScreen(editing: course),
+                    ),
+                  );
+                  _reload();
+                },
+                icon: const Icon(Icons.edit),
+                label: const Text('Edit'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
