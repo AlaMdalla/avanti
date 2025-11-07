@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -22,41 +23,37 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
+  // Email/Password Authentication
   Future<void> _authenticate() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
 
       if (_isSignUp) {
-        // Sign up
         final response = await Supabase.instance.client.auth.signUp(
           email: email,
           password: password,
         );
-        
         if (response.user != null) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Account created successfully! Please check your email to verify your account.'),
+                content: Text(
+                    'Account created successfully! Please check your email to verify your account.'),
                 backgroundColor: Colors.green,
               ),
             );
           }
         }
       } else {
-        // Sign in
         await Supabase.instance.client.auth.signInWithPassword(
           email: email,
           password: password,
         );
-        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -85,13 +82,36 @@ class _AuthScreenState extends State<AuthScreen> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
+
+  Future<void> _signInWithGoogle() async {
+  setState(() => _isLoading = true);
+  try {
+    await Supabase.instance.client.auth.signInWithOAuth(
+      OAuthProvider.google,
+      redirectTo: 'https://acqgaycpyoszdtdesxzt.supabase.co/auth/v1/callback', 
+    );
+  } on AuthException catch (error) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message), backgroundColor: Colors.red),
+      );
+    }
+  } catch (error) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unexpected error: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -107,15 +127,12 @@ class _AuthScreenState extends State<AuthScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo or App Title
               Icon(
                 Icons.account_circle,
                 size: 100,
                 color: Theme.of(context).primaryColor,
               ),
               const SizedBox(height: 32),
-              
-              // Email Field
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
@@ -135,8 +152,6 @@ class _AuthScreenState extends State<AuthScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              
-              // Password Field
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(
@@ -156,8 +171,6 @@ class _AuthScreenState extends State<AuthScreen> {
                 },
               ),
               const SizedBox(height: 24),
-              
-              // Submit Button
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -176,8 +189,20 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              
-              // Toggle between Sign In and Sign Up
+              // Google Sign-In Button
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: OutlinedButton.icon(
+                  icon: Image.asset(
+                    'assets/google_logo.png',
+                    height: 24,
+                  ),
+                  label: const Text('Continue with Google'),
+                  onPressed: _isLoading ? null : _signInWithGoogle,
+                ),
+              ),
+              const SizedBox(height: 16),
               TextButton(
                 onPressed: () {
                   setState(() {
