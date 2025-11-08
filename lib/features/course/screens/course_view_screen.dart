@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../profile/services/profile_service.dart';
+import '../../profile/models/profile.dart';
 import '../models/course.dart';
 import '../services/course_service.dart';
 import 'course_form_screen.dart';
@@ -15,11 +18,22 @@ class CourseViewScreen extends StatefulWidget {
 class _CourseViewScreenState extends State<CourseViewScreen> {
   final _service = CourseService();
   late Future<Course> _future;
+  final _profileService = ProfileService();
+  Profile? _profile;
 
   @override
   void initState() {
     super.initState();
     _future = _service.getById(widget.courseId);
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    final p = await _profileService.getProfile(user.id);
+    if (!mounted) return;
+    setState(() => _profile = p);
   }
 
   Future<void> _reload() async {
@@ -53,6 +67,7 @@ class _CourseViewScreenState extends State<CourseViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAdmin = _profile?.role == ProfileRole.admin;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Course'),
@@ -61,10 +76,11 @@ class _CourseViewScreenState extends State<CourseViewScreen> {
             icon: const Icon(Icons.refresh),
             onPressed: _reload,
           ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            onPressed: _delete,
-          ),
+          if (isAdmin)
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              onPressed: _delete,
+            ),
         ],
       ),
       body: FutureBuilder<Course>(
@@ -93,19 +109,20 @@ class _CourseViewScreenState extends State<CourseViewScreen> {
               const SizedBox(height: 24),
               Text('Instructor: ${course.instructorId}', style: Theme.of(context).textTheme.labelMedium),
               const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CourseFormScreen(editing: course),
-                    ),
-                  );
-                  _reload();
-                },
-                icon: const Icon(Icons.edit),
-                label: const Text('Edit'),
-              ),
+              if (isAdmin)
+                FilledButton.icon(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CourseFormScreen(editing: course),
+                      ),
+                    );
+                    _reload();
+                  },
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Edit'),
+                ),
               const SizedBox(height: 12),
               FilledButton.icon(
                 onPressed: () async {
