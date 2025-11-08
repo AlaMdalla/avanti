@@ -154,6 +154,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // Role row
+                            _buildProfileRow(
+                              Icons.workspace_premium_outlined,
+                              'Role',
+                              _profile!.role.name == 'admin' ? 'Admin' : 'User',
+                            ),
+                            const Divider(height: 24, thickness: 0.5),
                             _buildProfileRow(Icons.person_outline, 'Pseudo', _profile!.pseudo ?? 'N/A'),
                             const Divider(height: 24, thickness: 0.5),
                             _buildProfileRow(Icons.phone_outlined, 'Phone', _profile!.phone ?? 'N/A'),
