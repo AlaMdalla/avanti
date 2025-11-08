@@ -108,4 +108,18 @@ class ProfileService {
       return false;
     }
   }
+
+  // List all profiles (for admin management)
+  Future<List<Profile>> getAllProfiles() async {
+    try {
+      final response = await _supabase.from('profiles').select();
+      return (response as List)
+          .map((json) => Profile.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error getting profiles: $e');
+      return [];
+    }
+  }
 }
