@@ -55,6 +55,23 @@ class _UserListScreenState extends State<UserListScreen> {
         shadowColor: AppColors.primary.withOpacity(0.3),
         centerTitle: true,
       ),
+      floatingActionButton: _currentUserId == null
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatScreen(
+                      currentUserId: _currentUserId!,
+                      otherUserId: 'bot',
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.smart_toy_outlined),
+              label: const Text('Chat with Bot'),
+            ),
       body: Column(
         children: [
           // Search Bar

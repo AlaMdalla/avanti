@@ -43,6 +43,8 @@ dependencies:
   permission_handler: ^11.1.0
   emoji_picker_flutter: ^1.6.3
   equatable: ^2.0.5
+  http: ^1.2.1
+  flutter_dotenv: ^5.1.0
 
 
 dev_dependencies:
@@ -71,6 +73,7 @@ flutter:
   assets:
     - assets/images/
     - assets/google_logo.png
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

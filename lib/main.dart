@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/config/supabase_config.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/screens/auth_screen.dart';
@@ -12,13 +13,18 @@ import 'features/course/screens/course_form_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Supabase
+  await dotenv.load(fileName: '.env');
+  //add verification for .env load
+  if (dotenv.env['HF_API_KEY'] == null) {
+    throw Exception('Missing .env variable: HF_API_KEY');
+  }
+  else {
+    print('HF_API_KEY loaded successfully');
+  }
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
     anonKey: SupabaseConfig.supabaseAnonKey,
   );
-
   runApp(const MyApp());
 }
 
