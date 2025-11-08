@@ -27,6 +27,7 @@ class ProfileService {
     String? pseudo,
     String? avatarUrl,
     String? phone,
+    String role = 'user',
   }) async {
     final response = await _supabase.from('profiles').insert({
       'user_id': userId,
@@ -35,6 +36,7 @@ class ProfileService {
       'pseudo': pseudo,
       'avatar_url': avatarUrl,
       'phone': phone,
+      'role': role,
     }).select().single();
 
     return Profile.fromJson(response);
@@ -47,6 +49,7 @@ class ProfileService {
     String? pseudo,
     String? avatarUrl,
     String? phone,
+  String? role,
   }) async {
     final response = await _supabase
         .from('profiles')
@@ -56,6 +59,7 @@ class ProfileService {
           'pseudo': pseudo,
           'avatar_url': avatarUrl,
           'phone': phone,
+      if (role != null) 'role': role,
         })
         .eq('user_id', userId)
         .select()

@@ -6,6 +6,7 @@ class Profile {
   final String? pseudo;
   final String? avatarUrl;
   final String? phone;
+  final ProfileRole role;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -17,8 +18,9 @@ class Profile {
     this.pseudo,
     this.avatarUrl,
     this.phone,
-    required this.createdAt,
+  required this.createdAt,
     required this.updatedAt,
+  this.role = ProfileRole.user,
   });
 
   factory Profile.fromJson(Map<String, dynamic> json) {
@@ -30,6 +32,7 @@ class Profile {
       pseudo: json['pseudo'],
       avatarUrl: json['avatar_url'],
       phone: json['phone'],
+      role: ProfileRoleX.fromJson(json['role']),
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
     );
@@ -44,6 +47,7 @@ class Profile {
       'pseudo': pseudo,
       'avatar_url': avatarUrl,
       'phone': phone,
+  'role': role.name,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -57,6 +61,7 @@ class Profile {
     String? pseudo,
     String? avatarUrl,
     String? phone,
+    ProfileRole? role,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -68,6 +73,7 @@ class Profile {
       pseudo: pseudo ?? this.pseudo,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       phone: phone ?? this.phone,
+      role: role ?? this.role,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -78,5 +84,14 @@ class Profile {
       return '${firstName ?? ''} ${lastName ?? ''}'.trim();
     }
     return pseudo ?? 'User';
+  }
+}
+
+enum ProfileRole { admin, user }
+
+extension ProfileRoleX on ProfileRole {
+  static ProfileRole fromJson(dynamic v) {
+    final s = (v ?? 'user').toString();
+    return s == 'admin' ? ProfileRole.admin : ProfileRole.user;
   }
 }
