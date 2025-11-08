@@ -20,7 +20,7 @@ class _LessonFormPageState extends State<LessonFormPage> {
   final _durationController = TextEditingController();
 
   String _selectedType = 'video';
-  final List<String> _types = ['video', 'pdf', 'quiz'];
+  final List<String> _types = ['video', 'pdf'];
 
   bool _isLoading = false;
 

@@ -6,7 +6,7 @@ class GetLessonsByModule {
 
   GetLessonsByModule(this.repository);
 
-  Future<List<Lesson>> call(String module_id) {
-    return repository.getLessonsByModule(module_id);
+  Future<List<Lesson>> call(String moduleId) async {
+    return await repository.getLessonsByModule(moduleId);
   }
 }

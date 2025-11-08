@@ -178,8 +178,6 @@ class LessonPage extends StatelessWidget {
         return Icons.play_circle_fill_rounded;
       case 'pdf':
         return Icons.picture_as_pdf_rounded;
-      case 'quiz':
-        return Icons.quiz_rounded;
       default:
         return Icons.menu_book_rounded;
     }
