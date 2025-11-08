@@ -8,6 +8,7 @@ class QuizService {
   static const String questionsTable = 'quiz_questions';
   static const String optionsTable = 'quiz_options';
   static const String attemptsTable = 'quiz_attempts';
+  static const String certificationsTable = 'quiz_certifications';
 
   QuizService({SupabaseClient? client}) : _sb = client ?? Supabase.instance.client;
 
@@ -117,6 +118,28 @@ class QuizService {
         .single();
 
     return QuizAttempt.fromMap(attemptMap as Map<String, dynamic>);
+  }
+
+  Future<bool> awardCertificationIfEligible({
+    required QuizAttempt attempt,
+  }) async {
+    final percent = attempt.correctCount / (attempt.total == 0 ? 1 : attempt.total) * 100;
+    if (percent < 70.0) return false;
+    // check existing
+    final existing = await _sb
+        .from(certificationsTable)
+        .select('id')
+        .eq('quiz_id', attempt.quizId)
+        .eq('user_id', attempt.userId)
+        .maybeSingle();
+    if (existing != null) return true; // already certified
+    await _sb.from(certificationsTable).insert({
+      'quiz_id': attempt.quizId,
+      'user_id': attempt.userId,
+      'awarded_at': DateTime.now().toIso8601String(),
+      'score_percent': percent,
+    });
+    return true;
   }
 
   // Question & Option management

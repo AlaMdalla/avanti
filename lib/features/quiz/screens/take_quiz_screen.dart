@@ -21,6 +21,7 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
   int? _remaining; // seconds
   bool _submitted = false;
   QuizAttempt? _attempt;
+  bool _certified = false; // earned certification (score >= 70%)
 
   @override
   void initState() {
@@ -65,11 +66,20 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
         userId: user.id,
         selectedOptionIdByQuestionId: _selected,
       );
+      // Try to award certification if eligible
+      bool certified = false;
+      try {
+        certified = await _service.awardCertificationIfEligible(attempt: attempt);
+      } catch (_) {
+        // ignore persistence errors; UI will still show based on local percent
+      }
       if (!mounted) return;
       setState(() {
         _attempt = attempt;
         _submitted = true;
         _timer?.cancel();
+        final percentValue = attempt.correctCount / (attempt.total == 0 ? 1 : attempt.total) * 100;
+        _certified = certified || percentValue >= 70.0;
       });
     } catch (e) {
       if (!mounted) return;
@@ -122,6 +132,19 @@ class _TakeQuizScreenState extends State<TakeQuizScreen> {
                   const Icon(Icons.check_circle, size: 72, color: Colors.green),
                   const SizedBox(height: 24),
                   Text('Score: ${_attempt!.correctCount} / ${_attempt!.total} ($percent%)', style: Theme.of(context).textTheme.headlineSmall),
+                  if (_certified) ...[
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.workspace_premium, color: Colors.amber, size: 32),
+                        SizedBox(width: 8),
+                        Text('Certification earned!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text('You scored 70% or higher.'),
+                  ],
                   const SizedBox(height: 16),
                   FilledButton(
                     onPressed: () => Navigator.pop(context),
