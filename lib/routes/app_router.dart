@@ -4,7 +4,7 @@ import '../features/lesson/presentation/pages/lesson_form_page.dart';
 import '../features/lesson/domain/usecases/get_lessons_by_module.dart';
 import '../features/formateur/presentation/pages/formateur_form_page.dart';
 import '../features/formateur/presentation/pages/formateur_page.dart';
-import '../features/formateur/presentation/bloc/formateur_bloc.dart';
+import '../features/modules/presentation/pages/module_form_page.dart'; // ✅ IMPORT AJOUTÉ
 
 class AppRouter {
   static Route<dynamic> generateRoute(
@@ -31,6 +31,11 @@ class AppRouter {
       case '/formateurs':
         return MaterialPageRoute(
           builder: (_) => const FormateurPage(),
+        );
+
+      case '/add-module': // ✅ ROUTE CORRIGÉE
+        return MaterialPageRoute(
+          builder: (_) => const ModuleFormPage(),
         );
 
       default:

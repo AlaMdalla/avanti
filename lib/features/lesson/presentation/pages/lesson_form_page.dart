@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as p;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:e_learning_project/features/lesson/domain/entities/lesson.dart';
 
@@ -22,6 +25,9 @@ class _LessonFormPageState extends State<LessonFormPage> {
   String _selectedType = 'video';
   final List<String> _types = ['video', 'pdf'];
 
+  String? _pickedFilePath;
+  String? _pickedFileName;
+
   bool _isLoading = false;
 
   @override
@@ -43,6 +49,11 @@ class _LessonFormPageState extends State<LessonFormPage> {
 
     try {
       final client = Supabase.instance.client;
+
+      // Si un fichier local a été sélectionné, on utilise son chemin
+      if (_pickedFilePath != null && _contentUrlController.text.isEmpty) {
+        _contentUrlController.text = _pickedFilePath!;
+      }
 
       if (widget.lesson == null) {
         // Ajouter
@@ -147,12 +158,56 @@ class _LessonFormPageState extends State<LessonFormPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _contentUrlController,
-                decoration: const InputDecoration(
-                  labelText: "Lien du contenu (URL)",
-                  border: OutlineInputBorder(),
-                ),
+              // File picker / content URL
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _contentUrlController,
+                      decoration: const InputDecoration(
+                        labelText: "Lien du contenu (URL)",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                            final result = await FilePicker.platform.pickFiles(
+                              type: FileType.custom,
+                              allowedExtensions: ['pdf', 'mp4', 'mov', 'webm'],
+                            );
+                            if (result == null) return;
+                            final path = result.files.single.path;
+                            if (path == null) return;
+                            setState(() {
+                              _pickedFilePath = path;
+                              _pickedFileName = p.basename(path);
+                              // Auto-set type depending on extension
+                              final lower = _pickedFileName!.toLowerCase();
+                              if (lower.endsWith('.pdf')) {
+                                _selectedType = 'pdf';
+                              } else {
+                                _selectedType = 'video';
+                              }
+                            });
+                          },
+                    icon: const Icon(Icons.attach_file),
+                    label: const Text('Choisir un fichier'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _pickedFileName ?? 'Aucun fichier sélectionné',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               TextFormField(

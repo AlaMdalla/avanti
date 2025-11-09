@@ -9,11 +9,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:e_learning_project/main.dart';
+import 'package:e_learning_project/features/lesson/domain/usecases/get_lessons_by_module.dart';
+import 'package:e_learning_project/features/lesson/domain/repositories/lesson_repository.dart';
+import 'package:e_learning_project/features/lesson/domain/entities/lesson.dart';
+
+class _FakeLessonRepository implements LessonRepository {
+  @override
+  Future<void> addLesson(lesson) async {}
+
+  @override
+  Future<void> deleteLesson(String lessonId) async {}
+
+  @override
+  Future<Lesson?> getLessonById(String lessonId) async => null;
+
+  @override
+  Future<List<Lesson>> getLessonsByModule(String module_id) async => [];
+
+  @override
+  Future<void> updateLesson(lesson) async {}
+}
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  final getLessonsUseCase = GetLessonsByModule(_FakeLessonRepository());
+  await tester.pumpWidget(MyApp(getLessonsUseCase: getLessonsUseCase));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);
