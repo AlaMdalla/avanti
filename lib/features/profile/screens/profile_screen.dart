@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/profile.dart';
 import '../services/profile_service.dart';
+import '../../subscription/screens/user_subscription_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -169,6 +170,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Icons.calendar_today_outlined,
                               'Member Since',
                               _profile!.createdAt.toLocal().toString().split(' ')[0],
+                            ),
+                            const Divider(height: 24, thickness: 0.5),
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.workspace_premium, color: textSecondary),
+                              title: const Text('Subscription'),
+                              subtitle: const Text('View or upgrade your plan'),
+                              trailing: const Icon(Icons.chevron_right),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const UserSubscriptionScreen(),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),

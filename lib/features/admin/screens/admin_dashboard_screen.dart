@@ -5,6 +5,8 @@ import '../../course/screens/course_form_screen.dart';
 import '../../course/services/course_service.dart';
 import '../../profile/services/profile_service.dart';
 import '../../profile/models/profile.dart';
+import '../../subscription/screens/subscription_admin_screen.dart';
+import '../../subscription/screens/plan_form_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -21,13 +23,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Single
   Profile? _profile;
   late TabController _tabController;
   bool _updatingRole = false;
+  final GlobalKey<SubscriptionAdminScreenState> _subsKey = GlobalKey<SubscriptionAdminScreenState>();
 
   @override
   void initState() {
     super.initState();
   _futureCourses = _courseService.list();
   _futureProfiles = _profileService.getAllProfiles();
-  _tabController = TabController(length: 2, vsync: this);
+  _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (mounted) setState(() {});
     });
@@ -94,6 +97,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Single
           tabs: const [
             Tab(text: 'Courses'),
             Tab(text: 'Profiles'),
+            Tab(text: 'Subscriptions'),
           ],
         ),
       ),
@@ -202,6 +206,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Single
               );
             },
           ),
+          // Subscriptions tab
+          SubscriptionAdminScreen(key: _subsKey),
         ],
       ),
       floatingActionButton: _tabController.index == 0
@@ -212,7 +218,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Single
               },
               child: const Icon(Icons.add),
             )
-          : null,
+          : _tabController.index == 2
+              ? FloatingActionButton(
+                  onPressed: () async {
+                    final saved = await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => PlanFormScreen()),
+                    );
+                    if (saved != null) {
+                      _subsKey.currentState?.refresh();
+                    }
+                  },
+                  child: const Icon(Icons.add),
+                )
+              : null,
     );
   }
 }
