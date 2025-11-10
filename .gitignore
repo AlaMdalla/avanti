@@ -47,4 +47,4 @@ app.*.map.json
 # Environment files (secrets)
 .env
 
-./env
+./env.env
