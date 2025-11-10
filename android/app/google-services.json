@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "950604318509",
+    "project_id": "avanti-elearning",
+    "storage_bucket": "avanti-elearning.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:950604318509:android:b347aaa353eb4f6d6cb5a4",
+        "android_client_info": {
+          "package_name": "com.example.avanti"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3oijK86So9I5pssBiGffyVezb4MhJAto"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:950604318509:android:24b967dde0b46ca86cb5a4",
+        "android_client_info": {
+          "package_name": "com.example.avanti_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3oijK86So9I5pssBiGffyVezb4MhJAto"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
