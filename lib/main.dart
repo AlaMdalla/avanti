@@ -13,18 +13,24 @@ import 'features/course/screens/course_form_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
-  //add verification for .env load
+  
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    print('Warning loading .env: $e');
+  }
+
   if (dotenv.env['HF_API_KEY'] == null) {
     throw Exception('Missing .env variable: HF_API_KEY');
-  }
-  else {
+  } else {
     print('HF_API_KEY loaded successfully');
   }
+  
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
     anonKey: SupabaseConfig.supabaseAnonKey,
   );
+  
   runApp(const MyApp());
 }
 
@@ -35,13 +41,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Avanti - E-Learning',
-        routes: {
-       // '/': (context) => const HomeScreen(), // Your home screen
-        '/profile': (context) => const ProfileScreen(), // Your profile screen
+      routes: {
+        '/': (context) => const MainNavigation(), // AJOUTÉ: Route racine
+        '/home': (context) => const HomeScreen(),
+        '/profile': (context) => const ProfileScreen(),
         '/edit-profile': (context) => const EditProfileScreen(),
-  '/courses': (context) => const CourseListScreen(),
-  '/courses/new': (context) => const CourseFormScreen(),
-        // ...other routes...
+        '/courses': (context) => const CourseListScreen(),
+        '/courses/new': (context) => const CourseFormScreen(),
       },
       theme: AppTheme.lightTheme,
       home: const AuthWrapper(),
@@ -59,6 +65,7 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   User? _user;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -71,6 +78,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     final session = Supabase.instance.client.auth.currentSession;
     setState(() {
       _user = session?.user;
+      _isLoading = false;
     });
   }
 
@@ -84,7 +92,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    // Show loading indicator while checking authentication state
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     if (_user == null) {
       return const AuthScreen();
     } else {

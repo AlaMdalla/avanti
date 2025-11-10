@@ -45,14 +45,56 @@ class _CourseListScreenState extends State<CourseListScreen> {
   @override
   Widget build(BuildContext context) {
     final isAdmin = _profile?.role == ProfileRole.admin;
+
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Courses'),
+        title: const Text(
+          "Courses",
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.1,
+          ),
+        ),
+        centerTitle: true,
         actions: [
+          // Bouton pour créer un nouveau cours dans l'AppBar
           if (isAdmin)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Row(children: const [Icon(Icons.admin_panel_settings, size: 18), SizedBox(width: 6), Text('Admin')]),
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () async {
+                final user = Supabase.instance.client.auth.currentUser;
+                if (user == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please sign in to create a course'),
+                    ),
+                  );
+                  return;
+                }
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CourseFormScreen()),
+                );
+                _refresh();
+              },
+              tooltip: 'Create New Course',
+            ),
+          if (isAdmin)
+            Container(
+              margin: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.admin_panel_settings, size: 16),
+                  SizedBox(width: 4),
+                  Text('Admin', style: TextStyle(fontSize: 12)),
+                ],
+              ),
             ),
         ],
       ),
@@ -62,47 +104,151 @@ class _CourseListScreenState extends State<CourseListScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: const TextStyle(color: Colors.redAccent),
+              ),
+            );
           }
+
           final items = snapshot.data ?? [];
+
           if (items.isEmpty) {
-            return const Center(child: Text('No courses yet'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.school, size: 64, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No courses yet',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Add the first course to get started',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 24),
+                  if (isAdmin)
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final user = Supabase.instance.client.auth.currentUser;
+                        if (user == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please sign in to create a course'),
+                            ),
+                          );
+                          return;
+                        }
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CourseFormScreen()),
+                        );
+                        _refresh();
+                      },
+                      icon: const Icon(Icons.add),
+                      label: const Text('Create First Course'),
+                    ),
+                ],
+              ),
+            );
           }
+
           return RefreshIndicator(
             onRefresh: _refresh,
-            child: ListView.separated(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
               itemCount: items.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
-              itemBuilder: (context, i) {
-                final c = items[i];
-                return ListTile(
-                  leading: c.imageUrl != null
-                      ? CircleAvatar(backgroundImage: NetworkImage(c.imageUrl!))
-                      : const CircleAvatar(child: Icon(Icons.school)),
-                  title: Text(c.title),
-                  subtitle: Text(c.description ?? ''),
-                  onTap: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => CourseViewScreen(courseId: c.id)),
-                    );
-                    _refresh();
-                  },
-                  trailing: isAdmin
-                      ? IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => CourseFormScreen(editing: c),
-                              ),
-                            );
-                            _refresh();
-                          },
-                        )
-                      : null,
+              itemBuilder: (context, index) {
+                final course = items[index];
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16),
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.blue[50],
+                      radius: 30,
+                      backgroundImage: course.imageUrl != null
+                          ? NetworkImage(course.imageUrl!)
+                          : null,
+                      child: course.imageUrl == null
+                          ? const Icon(Icons.school, color: Colors.blue)
+                          : null,
+                    ),
+                    title: Text(
+                      course.title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 6.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            course.description ?? 'No description',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[700],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Instructor: ${course.instructorId}",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    trailing: isAdmin
+                        ? IconButton(
+                            icon: const Icon(Icons.edit, color: Colors.orange),
+                            onPressed: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => CourseFormScreen(editing: course),
+                                ),
+                              );
+                              _refresh();
+                            },
+                          )
+                        : null,
+                    onTap: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CourseViewScreen(courseId: course.id),
+                        ),
+                      );
+                      _refresh();
+                    },
+                  ),
                 );
               },
             ),
@@ -114,11 +260,11 @@ class _CourseListScreenState extends State<CourseListScreen> {
               onPressed: () async {
                 final user = Supabase.instance.client.auth.currentUser;
                 if (user == null) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Please sign in to create a course')),
-                    );
-                  }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please sign in to create a course'),
+                    ),
+                  );
                   return;
                 }
                 await Navigator.push(
@@ -127,7 +273,8 @@ class _CourseListScreenState extends State<CourseListScreen> {
                 );
                 _refresh();
               },
-              child: const Icon(Icons.add),
+              backgroundColor: Colors.blue,
+              child: const Icon(Icons.add, color: Colors.white),
             )
           : null,
     );

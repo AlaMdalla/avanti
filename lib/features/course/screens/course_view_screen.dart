@@ -5,10 +5,12 @@ import '../../profile/models/profile.dart';
 import '../models/course.dart';
 import '../services/course_service.dart';
 import 'course_form_screen.dart';
+
 import '../../quiz/screens/quiz_list_screen.dart';
 
 class CourseViewScreen extends StatefulWidget {
   final String courseId;
+
   const CourseViewScreen({super.key, required this.courseId});
 
   @override
@@ -49,18 +51,28 @@ class _CourseViewScreenState extends State<CourseViewScreen> {
         title: const Text('Delete course'),
         content: const Text('Are you sure you want to delete this course?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Delete')),
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Delete'),
+          ),
         ],
       ),
     );
+
     if (confirm != true) return;
+
     try {
       await _service.delete(widget.courseId);
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
       }
     }
   }
@@ -68,6 +80,7 @@ class _CourseViewScreenState extends State<CourseViewScreen> {
   @override
   Widget build(BuildContext context) {
     final isAdmin = _profile?.role == ProfileRole.admin;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Course'),
@@ -89,25 +102,38 @@ class _CourseViewScreenState extends State<CourseViewScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
+
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
+
           final course = snapshot.data;
           if (course == null) return const Center(child: Text('Not found'));
+
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
               if (course.imageUrl != null)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.network(course.imageUrl!, height: 180, fit: BoxFit.cover),
+                  child: Image.network(
+                    course.imageUrl!,
+                    height: 180,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               const SizedBox(height: 16),
-              Text(course.title, style: Theme.of(context).textTheme.headlineSmall),
+              Text(
+                course.title,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
               const SizedBox(height: 8),
               Text(course.description ?? 'No description'),
               const SizedBox(height: 24),
-              Text('Instructor: ${course.instructorId}', style: Theme.of(context).textTheme.labelMedium),
+              Text(
+                'Instructor: ${course.instructorId}',
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
               const SizedBox(height: 24),
               if (isAdmin)
                 FilledButton.icon(
@@ -123,13 +149,17 @@ class _CourseViewScreenState extends State<CourseViewScreen> {
                   icon: const Icon(Icons.edit),
                   label: const Text('Edit'),
                 ),
+              
               const SizedBox(height: 12),
               FilledButton.icon(
                 onPressed: () async {
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => QuizListScreen(courseId: course.id, courseTitle: 'Quizzes: ${course.title}'),
+                      builder: (_) => QuizListScreen(
+                        courseId: course.id,
+                        courseTitle: 'Quizzes: ${course.title}',
+                      ),
                     ),
                   );
                 },

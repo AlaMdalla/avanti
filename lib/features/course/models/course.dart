@@ -18,27 +18,7 @@ class Course {
     this.imageUrl,
     this.createdAt,
     this.updatedAt,
-  });
-
-  Course copyWith({
-    String? id,
-    String? title,
-    String? description,
-    String? imageUrl,
-    String? instructorId,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return Course(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      imageUrl: imageUrl ?? this.imageUrl,
-      instructorId: instructorId ?? this.instructorId,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
+  }); 
 
   factory Course.fromMap(Map<String, dynamic> map) {
     return Course(
@@ -47,12 +27,8 @@ class Course {
       description: map['description'] as String?,
       imageUrl: map['image_url'] as String?,
       instructorId: map['instructor_id'] as String,
-      createdAt: map['created_at'] != null
-          ? DateTime.tryParse(map['created_at'] as String)
-          : null,
-      updatedAt: map['updated_at'] != null
-          ? DateTime.tryParse(map['updated_at'] as String)
-          : null,
+      createdAt: map['created_at'] != null ? DateTime.tryParse(map['created_at'] as String) : null,
+      updatedAt: map['updated_at'] != null ? DateTime.tryParse(map['updated_at'] as String) : null,
     );
   }
 
@@ -81,16 +57,16 @@ class CourseInput {
   });
 
   Map<String, dynamic> toInsert(String instructorId) => {
-        'title': title,
-        'description': description,
-        'image_url': imageUrl,
-        'instructor_id': instructorId,
-      };
+    'title': title,
+    'description': description,
+    'image_url': imageUrl,
+    'instructor_id': instructorId,
+  };
 
   Map<String, dynamic> toUpdate() => {
-        'title': title,
-        'description': description,
-        'image_url': imageUrl,
-        'updated_at': DateTime.now().toIso8601String(),
-      }..removeWhere((key, value) => value == null);
+    'title': title,
+    'description': description,
+    'image_url': imageUrl,
+    'updated_at': DateTime.now().toIso8601String(),
+  }..removeWhere((key, value) => value == null);
 }
