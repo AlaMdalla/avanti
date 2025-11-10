@@ -6,6 +6,7 @@ import '../models/course.dart';
 import '../services/course_service.dart';
 import 'course_form_screen.dart';
 import 'course_view_screen.dart';
+import 'course_recommendation_screen.dart';
 
 class CourseListScreen extends StatefulWidget {
   const CourseListScreen({super.key});
@@ -49,6 +50,14 @@ class _CourseListScreenState extends State<CourseListScreen> {
       appBar: AppBar(
         title: const Text('Courses'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.smart_toy_outlined),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CourseRecommendationScreen()),
+            ),
+            tooltip: 'AI Recommendations',
+          ),
           if (isAdmin)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
