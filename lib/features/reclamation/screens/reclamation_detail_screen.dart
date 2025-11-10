@@ -20,7 +20,7 @@ class ReclamationDetailScreen extends StatefulWidget {
 
 class _ReclamationDetailScreenState extends State<ReclamationDetailScreen> {
   late Reclamation _reclamation;
-  late Future<List<dynamic>> _responsesFuture;
+  late Future<List<ReclamationResponse>> _responsesFuture;
   final _reclamationService = ReclamationService();
   late TextEditingController _responseController;
   late TextEditingController _reasonController;
@@ -320,7 +320,7 @@ class _ReclamationDetailScreenState extends State<ReclamationDetailScreen> {
                     style: AppTextStyles.h4,
                   ),
                   const SizedBox(height: 12),
-                  FutureBuilder<List<dynamic>>(
+                  FutureBuilder<List<ReclamationResponse>>(
                     future: _responsesFuture,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -355,13 +355,10 @@ class _ReclamationDetailScreenState extends State<ReclamationDetailScreen> {
 
                       return Column(
                         children: responses.map((response) {
-                          final resp = response as dynamic;
                           return _ResponseCard(
-                            responseText:
-                                resp['response_text'] as String? ?? '',
-                            createdAt: DateTime.parse(resp['created_at'] as String? ?? ''),
-                            isAdmin:
-                                resp['is_admin_response'] as bool? ?? true,
+                            responseText: response.responseText,
+                            createdAt: response.createdAt,
+                            isAdmin: response.isAdminResponse,
                           );
                         }).toList(),
                       );
