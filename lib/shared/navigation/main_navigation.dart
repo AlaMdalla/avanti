@@ -7,6 +7,8 @@ import '../../features/profile/screens/UserListScreen.dart'; // Import UserListS
 import '../../features/messages/screens/chat_screen.dart'; // Import ChatScreen
 import '../../features/course/screens/course_list_screen.dart';
 import '../../features/course/screens/modules_list_screen.dart'; // Import ModulesListScreen
+import '../../features/reclamation/screens/reclamations_list_screen.dart'; // Import ReclamationsListScreen
+import '../../features/reclamation/screens/admin_reclamations_screen.dart'; // Import AdminReclamationsScreen
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/profile/services/profile_service.dart';
@@ -27,6 +29,7 @@ class _MainNavigationState extends State<MainNavigation> {
         const HomeScreen(),
         const CourseListScreen(),
         const ModulesListScreen(),
+        _isAdmin ? const AdminReclamationsScreen() : const ReclamationsListScreen(),
         if (_isAdmin) const AdminDashboardScreen(),
         const ProfileScreen(),
         const EditProfileScreen(),
@@ -70,30 +73,36 @@ class _MainNavigationState extends State<MainNavigation> {
         label: 'Modules',
         index: 2,
       ),
+      _NavigationItem(
+        icon: Icons.speaker_notes_outlined,
+        activeIcon: Icons.speaker_notes,
+        label: 'Reclamations',
+        index: 3,
+      ),
       if (_isAdmin)
         _NavigationItem(
           icon: Icons.admin_panel_settings_outlined,
           activeIcon: Icons.admin_panel_settings,
           label: 'Admin',
-          index: 3,
+          index: 4,
         ),
       _NavigationItem(
         icon: Icons.person_outline,
         activeIcon: Icons.person,
         label: 'Profile',
-        index: _isAdmin ? 4 : 3,
+        index: _isAdmin ? 5 : 4,
       ),
       _NavigationItem(
         icon: Icons.edit_outlined,
         activeIcon: Icons.edit,
         label: 'Edit Profile',
-        index: _isAdmin ? 5 : 4,
+        index: _isAdmin ? 6 : 5,
       ),
       _NavigationItem(
         icon: Icons.chat_bubble_outline,
         activeIcon: Icons.chat_bubble,
         label: 'Messages',
-        index: _isAdmin ? 6 : 5,
+        index: _isAdmin ? 7 : 6,
       ),
     ];
 
