@@ -46,6 +46,7 @@ dependencies:
   http: ^1.2.1
   flutter_dotenv: ^5.1.0
   url_launcher: ^6.2.5
+  flutter_stripe: ^12.1.0
 
 
 dev_dependencies:

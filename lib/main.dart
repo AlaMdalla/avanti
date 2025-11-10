@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'core/config/supabase_config.dart';
+import 'features/subscription/services/stripe_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/screens/auth_screen.dart';
 import 'shared/navigation/main_navigation.dart';
@@ -10,6 +12,7 @@ import 'features/profile/screens/profile_screen.dart';
 import 'features/profile/screens/EditProfile_screen.dart';
 import 'features/course/screens/course_list_screen.dart';
 import 'features/course/screens/course_form_screen.dart';
+import 'features/subscription/screens/user_subscription_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +24,19 @@ void main() async {
   else {
     print('HF_API_KEY loaded successfully');
   }
+  
+  // Initialize Stripe (only if supported)
+  final stripeKey = dotenv.env['STRIPE_PUBLISHABLE_KEY'];
+  if (stripeKey != null && stripeKey.isNotEmpty) {
+    try {
+      Stripe.publishableKey = stripeKey;
+      await StripeService.initialize();
+    } catch (e) {
+      // Stripe not supported on this platform (e.g., Linux, Web)
+      // This is expected - demo mode will be shown instead
+    }
+  }
+  
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
     anonKey: SupabaseConfig.supabaseAnonKey,
@@ -39,8 +55,9 @@ class MyApp extends StatelessWidget {
        // '/': (context) => const HomeScreen(), // Your home screen
         '/profile': (context) => const ProfileScreen(), // Your profile screen
         '/edit-profile': (context) => const EditProfileScreen(),
-  '/courses': (context) => const CourseListScreen(),
-  '/courses/new': (context) => const CourseFormScreen(),
+        '/courses': (context) => const CourseListScreen(),
+        '/courses/new': (context) => CourseFormScreen(),
+        '/subscription': (context) => const UserSubscriptionScreen(),
         // ...other routes...
       },
       theme: AppTheme.lightTheme,
