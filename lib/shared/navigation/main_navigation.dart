@@ -6,6 +6,7 @@ import '../../features/profile/screens/EditProfile_screen.dart';
 import '../../features/profile/screens/UserListScreen.dart'; // Import UserListScreen
 import '../../features/messages/screens/chat_screen.dart'; // Import ChatScreen
 import '../../features/course/screens/course_list_screen.dart';
+import '../../features/course/screens/modules_list_screen.dart'; // Import ModulesListScreen
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/profile/services/profile_service.dart';
@@ -25,6 +26,7 @@ class _MainNavigationState extends State<MainNavigation> {
   List<Widget> get _screens => [
         const HomeScreen(),
         const CourseListScreen(),
+        const ModulesListScreen(),
         if (_isAdmin) const AdminDashboardScreen(),
         const ProfileScreen(),
         const EditProfileScreen(),
@@ -82,6 +84,11 @@ class _MainNavigationState extends State<MainNavigation> {
               icon: Icon(Icons.menu_book_outlined),
               activeIcon: Icon(Icons.menu_book),
               label: 'Courses',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.library_books_outlined),
+              activeIcon: Icon(Icons.library_books),
+              label: 'Modules',
             ),
             if (_isAdmin)
               const BottomNavigationBarItem(
