@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/module.dart';
 import '../models/course.dart';
 import '../../quiz/models/quiz_models.dart';
+import '../../profile/services/profile_service.dart';
+import '../../profile/models/profile.dart';
 import 'course_view_screen.dart';
 
 class ModulesListScreen extends StatefulWidget {
@@ -15,11 +17,22 @@ class ModulesListScreen extends StatefulWidget {
 class _ModulesListScreenState extends State<ModulesListScreen> {
   late Future<List<Module>> _modulesFuture;
   final supabase = Supabase.instance.client;
+  final _profileService = ProfileService();
+  Profile? _profile;
 
   @override
   void initState() {
     super.initState();
     _modulesFuture = _fetchModules();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final user = supabase.auth.currentUser;
+    if (user == null) return;
+    final p = await _profileService.getProfile(user.id);
+    if (!mounted) return;
+    setState(() => _profile = p);
   }
 
   Future<List<Module>> _fetchModules() async {
@@ -99,11 +112,19 @@ class _ModulesListScreenState extends State<ModulesListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isAdmin = _profile?.role == ProfileRole.admin;
     return Scaffold(
       appBar: AppBar(
         title: const Text('All Modules'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         elevation: 0,
+        actions: [
+          if (isAdmin)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(children: const [Icon(Icons.admin_panel_settings, size: 18), SizedBox(width: 6), Text('Admin')]),
+            ),
+        ],
       ),
       body: FutureBuilder<List<Module>>(
         future: _modulesFuture,
@@ -182,7 +203,7 @@ class _ModulesListScreenState extends State<ModulesListScreen> {
                     ),
                   );
                 },
-                child: _ModuleCard(module: module),
+                child: _ModuleCard(module: module, isAdmin: isAdmin ?? false),
               );
             },
           );
@@ -194,8 +215,9 @@ class _ModulesListScreenState extends State<ModulesListScreen> {
 
 class _ModuleCard extends StatelessWidget {
   final Module module;
+  final bool isAdmin;
 
-  const _ModuleCard({required this.module});
+  const _ModuleCard({required this.module, required this.isAdmin});
 
   @override
   Widget build(BuildContext context) {
