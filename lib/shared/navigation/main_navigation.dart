@@ -51,67 +51,197 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-  body: _screens[_currentIndex.clamp(0, _screens.length - 1)],
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          boxShadow: [AppShadows.soft],
+    final navigationItems = [
+      _NavigationItem(
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home,
+        label: 'Home',
+        index: 0,
+      ),
+      _NavigationItem(
+        icon: Icons.menu_book_outlined,
+        activeIcon: Icons.menu_book,
+        label: 'Courses',
+        index: 1,
+      ),
+      _NavigationItem(
+        icon: Icons.library_books_outlined,
+        activeIcon: Icons.library_books,
+        label: 'Modules',
+        index: 2,
+      ),
+      if (_isAdmin)
+        _NavigationItem(
+          icon: Icons.admin_panel_settings_outlined,
+          activeIcon: Icons.admin_panel_settings,
+          label: 'Admin',
+          index: 3,
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.surface,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textTertiary,
-          selectedLabelStyle: AppTextStyles.caption.copyWith(
-            color: AppColors.primary,
-            fontWeight: FontWeight.w600,
-          ),
-          unselectedLabelStyle: AppTextStyles.caption,
-          elevation: 0,
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.menu_book_outlined),
-              activeIcon: Icon(Icons.menu_book),
-              label: 'Courses',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.library_books_outlined),
-              activeIcon: Icon(Icons.library_books),
-              label: 'Modules',
-            ),
-            if (_isAdmin)
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.admin_panel_settings_outlined),
-                activeIcon: Icon(Icons.admin_panel_settings),
-                label: 'Admin',
+      _NavigationItem(
+        icon: Icons.person_outline,
+        activeIcon: Icons.person,
+        label: 'Profile',
+        index: _isAdmin ? 4 : 3,
+      ),
+      _NavigationItem(
+        icon: Icons.edit_outlined,
+        activeIcon: Icons.edit,
+        label: 'Edit Profile',
+        index: _isAdmin ? 5 : 4,
+      ),
+      _NavigationItem(
+        icon: Icons.chat_bubble_outline,
+        activeIcon: Icons.chat_bubble,
+        label: 'Messages',
+        index: _isAdmin ? 6 : 5,
+      ),
+    ];
+
+    return Scaffold(
+      body: Row(
+        children: [
+          // Sidebar Navigation
+          Container(
+            width: 280,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              border: Border(
+                right: BorderSide(
+                  color: Colors.grey[300] ?? Colors.grey,
+                  width: 1,
+                ),
               ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile',
+              boxShadow: const [AppShadows.soft],
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.edit_outlined),
-              activeIcon: Icon(Icons.edit),
-              label: 'Edit Profile',
+            child: Column(
+              children: [
+                // Sidebar Header
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Navigation',
+                        style: AppTextStyles.h4.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${navigationItems.length} sections',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textTertiary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                // Scrollable Navigation Items
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                    itemCount: navigationItems.length,
+                    itemBuilder: (context, index) {
+                      final item = navigationItems[index];
+                      return _SidebarNavigationItem(
+                        item: item,
+                        isSelected: _currentIndex == item.index,
+                        onTap: () {
+                          setState(() {
+                            _currentIndex = item.index;
+                          });
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble_outline),
-              activeIcon: Icon(Icons.chat_bubble),
-              label: 'Messages',
+          ),
+          // Main Content
+          Expanded(
+            child: _screens[_currentIndex.clamp(0, _screens.length - 1)],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NavigationItem {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final int index;
+
+  _NavigationItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.index,
+  });
+}
+
+class _SidebarNavigationItem extends StatelessWidget {
+  final _NavigationItem item;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _SidebarNavigationItem({
+    required this.item,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? AppColors.primary.withOpacity(0.1)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected
+              ? AppColors.primary
+              : Colors.transparent,
+          width: 2,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Row(
+              children: [
+                Icon(
+                  isSelected ? item.activeIcon : item.icon,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.textTertiary,
+                  size: 24,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    item.label,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
