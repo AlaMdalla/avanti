@@ -9,6 +9,7 @@ import '../../features/course/screens/course_list_screen.dart';
 import '../../features/course/screens/modules_list_screen.dart'; // Import ModulesListScreen
 import '../../features/reclamation/screens/reclamations_list_screen.dart'; // Import ReclamationsListScreen
 import '../../features/reclamation/screens/admin_reclamations_screen.dart'; // Import AdminReclamationsScreen
+import '../../features/blog/screens/blog_list_screen.dart'; // Import BlogListScreen
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/profile/services/profile_service.dart';
@@ -31,6 +32,7 @@ class _MainNavigationState extends State<MainNavigation> {
         const ModulesListScreen(),
         _isAdmin ? const AdminReclamationsScreen() : const ReclamationsListScreen(),
         if (_isAdmin) const AdminDashboardScreen(),
+        const BlogListScreen(),
         const ProfileScreen(),
         const EditProfileScreen(),
         UserListScreen(),
@@ -87,22 +89,28 @@ class _MainNavigationState extends State<MainNavigation> {
           index: 4,
         ),
       _NavigationItem(
+        icon: Icons.article_outlined,
+        activeIcon: Icons.article,
+        label: 'My Blogs',
+        index: _isAdmin ? 5 : 4,
+      ),
+      _NavigationItem(
         icon: Icons.person_outline,
         activeIcon: Icons.person,
         label: 'Profile',
-        index: _isAdmin ? 5 : 4,
+        index: _isAdmin ? 6 : 5,
       ),
       _NavigationItem(
         icon: Icons.edit_outlined,
         activeIcon: Icons.edit,
         label: 'Edit Profile',
-        index: _isAdmin ? 6 : 5,
+        index: _isAdmin ? 7 : 6,
       ),
       _NavigationItem(
         icon: Icons.chat_bubble_outline,
         activeIcon: Icons.chat_bubble,
         label: 'Messages',
-        index: _isAdmin ? 7 : 6,
+        index: _isAdmin ? 8 : 7,
       ),
     ];
 
