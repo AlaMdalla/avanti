@@ -99,6 +99,73 @@ class _InstructorListScreenState extends State<InstructorListScreen> {
     }
   }
 
+  Future<void> _duplicateInstructor(Instructor instructor) async {
+    try {
+      final newInstructor = instructor.copyWith(
+        id: '',
+        createdAt: null,
+        updatedAt: null,
+      );
+      
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => InstructorFormScreen(editing: newInstructor),
+          ),
+        ).then((_) => _refresh());
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _bulkDeleteInstructors(List<Instructor> instructors) async {
+    if (instructors.isEmpty) return;
+    
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Multiple Instructors'),
+        content: Text('Are you sure you want to delete ${instructors.length} instructor(s)? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete All', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      for (final instructor in instructors) {
+        await _service.delete(instructor.id);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${instructors.length} instructor(s) deleted successfully')),
+        );
+        _refresh();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAdmin = _profile?.role == ProfileRole.admin;
@@ -180,6 +247,7 @@ class _InstructorListScreenState extends State<InstructorListScreen> {
                       builder: (_) => InstructorFormScreen(editing: instructor),
                     ),
                   ).then((_) => _refresh()),
+                  onDuplicate: () => _duplicateInstructor(instructor),
                   onDelete: () => _deleteInstructor(instructor),
                 );
               },
@@ -208,6 +276,8 @@ class _InstructorCard extends StatelessWidget {
   final VoidCallback onView;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onDuplicate;
+  final VoidCallback? onBulkDelete;
 
   const _InstructorCard({
     required this.instructor,
@@ -215,6 +285,8 @@ class _InstructorCard extends StatelessWidget {
     required this.onView,
     required this.onEdit,
     required this.onDelete,
+    this.onDuplicate,
+    this.onBulkDelete,
   });
 
   @override
@@ -262,11 +334,14 @@ class _InstructorCard extends StatelessWidget {
                 onSelected: (value) {
                   if (value == 'view') onView();
                   if (value == 'edit') onEdit();
+                  if (value == 'duplicate') onDuplicate?.call();
                   if (value == 'delete') onDelete();
                 },
                 itemBuilder: (BuildContext context) => [
                   const PopupMenuItem(value: 'view', child: Text('View')),
                   const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                  const PopupMenuItem(value: 'duplicate', child: Text('Duplicate')),
+                  const PopupMenuDivider(),
                   const PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete', style: TextStyle(color: Colors.red)),

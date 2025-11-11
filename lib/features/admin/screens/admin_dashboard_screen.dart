@@ -4,6 +4,7 @@ import '../../course/models/course.dart';
 import '../../course/models/module.dart';
 import '../../course/screens/course_form_screen.dart';
 import '../../course/screens/module_form_screen.dart';
+import '../../course/screens/instructor_list_screen.dart';
 import '../../course/services/course_service.dart';
 import '../../course/services/module_service.dart';
 import '../../profile/services/profile_service.dart';
@@ -36,7 +37,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Single
   _futureCourses = _courseService.list();
   _futureModules = _moduleService.list();
   _futureProfiles = _profileService.getAllProfiles();
-  _tabController = TabController(length: 4, vsync: this);
+  _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(() {
       if (mounted) setState(() {});
     });
@@ -110,6 +111,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Single
           tabs: const [
             Tab(text: 'Courses'),
             Tab(text: 'Modules'),
+            Tab(text: 'Instructors'),
             Tab(text: 'Profiles'),
             Tab(text: 'Subscriptions'),
           ],
@@ -217,6 +219,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Single
               );
             },
           ),
+          // Instructors tab
+          const InstructorListScreen(),
           // Profiles tab
           FutureBuilder<List<Profile>>(
             future: _futureProfiles,
@@ -309,7 +313,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Single
                   },
                   child: const Icon(Icons.add),
                 )
-              : _tabController.index == 3
+              : _tabController.index == 4
                   ? FloatingActionButton(
                       onPressed: () async {
                         final saved = await Navigator.push(
