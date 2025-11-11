@@ -12,7 +12,7 @@ class CourseService {
 
   Future<List<Course>> list({int limit = 50, int offset = 0}) async {
     final data = await _sb.from(table)
-        .select()
+        .select('*, instructors(*)')
         .order('created_at', ascending: false)
         .range(offset, offset + limit - 1);
   final list = data as List<dynamic>;
@@ -20,7 +20,7 @@ class CourseService {
   }
 
   Future<Course> getById(String id) async {
-    final data = await _sb.from(table).select().eq('id', id).maybeSingle();
+    final data = await _sb.from(table).select('*, instructors(*)').eq('id', id).maybeSingle();
     if (data == null) {
       throw Exception('Course not found');
     }
@@ -31,7 +31,7 @@ class CourseService {
     final inserted = await _sb
         .from(table)
         .insert(input.toInsert(instructorId))
-        .select()
+        .select('*, instructors(*)')
         .single();
   return Course.fromMap(inserted);
   }
@@ -41,7 +41,7 @@ class CourseService {
         .from(table)
         .update(input.toUpdate())
         .eq('id', id)
-        .select()
+        .select('*, instructors(*)')
         .single();
   return Course.fromMap(updated);
   }

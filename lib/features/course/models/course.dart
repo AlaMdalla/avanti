@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'instructor.dart';
 
 @immutable
 class Course {
@@ -8,6 +9,7 @@ class Course {
   final String? imageUrl;
   final String? pdfUrl;
   final String instructorId;
+  final Instructor? instructor;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -18,6 +20,7 @@ class Course {
     this.description,
     this.imageUrl,
     this.pdfUrl,
+    this.instructor,
     this.createdAt,
     this.updatedAt,
   });
@@ -29,6 +32,7 @@ class Course {
     String? imageUrl,
     String? pdfUrl,
     String? instructorId,
+    Instructor? instructor,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -39,6 +43,7 @@ class Course {
       imageUrl: imageUrl ?? this.imageUrl,
       pdfUrl: pdfUrl ?? this.pdfUrl,
       instructorId: instructorId ?? this.instructorId,
+      instructor: instructor ?? this.instructor,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -52,6 +57,9 @@ class Course {
       imageUrl: map['image_url'] as String?,
       pdfUrl: map['pdf_url'] as String?,
       instructorId: map['instructor_id'] as String,
+      instructor: map['instructors'] != null
+          ? Instructor.fromMap(map['instructors'] as Map<String, dynamic>)
+          : null,
       createdAt: map['created_at'] != null
           ? DateTime.tryParse(map['created_at'] as String)
           : null,
@@ -69,6 +77,7 @@ class Course {
       'image_url': imageUrl,
       'pdf_url': pdfUrl,
       'instructor_id': instructorId,
+      'instructor': instructor?.toMap(),
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };

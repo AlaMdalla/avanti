@@ -4,7 +4,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import '../models/course.dart';
+import '../models/instructor.dart';
 import '../services/course_service.dart';
+import '../services/instructor_service.dart';
 
 class CourseFormScreen extends StatefulWidget {
   final Course? editing;
@@ -20,6 +22,7 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
   final _descCtrl = TextEditingController();
   final _imageCtrl = TextEditingController();
   final _service = CourseService();
+  final _instructorService = InstructorService();
   bool _saving = false;
   final _picker = ImagePicker();
   File? _pickedImage;
@@ -27,18 +30,44 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
   String? _uploadedUrl;
   String? _uploadedPdfUrl;
   String? _pdfFileName;
+  List<Instructor> _instructors = [];
+  String? _selectedInstructorId;
+  bool _loadingInstructors = true;
 
   @override
   void initState() {
     super.initState();
+    _loadInstructors();
     if (widget.editing != null) {
       _titleCtrl.text = widget.editing!.title;
       _descCtrl.text = widget.editing!.description ?? '';
       _uploadedUrl = widget.editing!.imageUrl;
       _uploadedPdfUrl = widget.editing!.pdfUrl;
       _imageCtrl.text = widget.editing!.imageUrl ?? '';
+      _selectedInstructorId = widget.editing!.instructorId;
       if (_uploadedPdfUrl != null) {
         _pdfFileName = _uploadedPdfUrl!.split('/').last;
+      }
+    }
+  }
+
+  Future<void> _loadInstructors() async {
+    try {
+      final instructors = await _instructorService.list();
+      setState(() {
+        _instructors = instructors;
+        _loadingInstructors = false;
+        // Set default instructor to current user if creating new course
+        if (widget.editing == null && _selectedInstructorId == null && _instructors.isNotEmpty) {
+          _selectedInstructorId = _instructors.first.id;
+        }
+      });
+    } catch (e) {
+      setState(() => _loadingInstructors = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading instructors: $e')),
+        );
       }
     }
   }
@@ -53,6 +82,13 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedInstructorId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select an instructor')),
+      );
+      return;
+    }
+
     setState(() => _saving = true);
     try {
       // If an image is picked, upload it and use resulting public URL
@@ -80,9 +116,7 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
         pdfUrl: finalPdfUrl,
       );
       if (widget.editing == null) {
-        final user = Supabase.instance.client.auth.currentUser;
-        if (user == null) throw Exception('Not authenticated');
-        await _service.create(input, instructorId: user.id);
+        await _service.create(input, instructorId: _selectedInstructorId!);
       } else {
         await _service.update(widget.editing!.id, input);
       }
@@ -139,20 +173,47 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _titleCtrl,
-                decoration: const InputDecoration(labelText: 'Title'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _descCtrl,
-                decoration: const InputDecoration(labelText: 'Description'),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 12),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _titleCtrl,
+                  decoration: const InputDecoration(labelText: 'Title'),
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _descCtrl,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 12),
+                // Instructor Dropdown
+                _loadingInstructors
+                    ? const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: CircularProgressIndicator(),
+                      )
+                    : DropdownButtonFormField<String>(
+                        value: _selectedInstructorId,
+                        decoration: const InputDecoration(
+                          labelText: 'Instructor *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person),
+                        ),
+                        items: _instructors
+                            .map((instructor) => DropdownMenuItem(
+                                  value: instructor.id,
+                                  child: Text(instructor.name),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() => _selectedInstructorId = value);
+                        },
+                        validator: (v) =>
+                            (v == null || v.isEmpty) ? 'Please select an instructor' : null,
+                      ),
+                const SizedBox(height: 12),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -246,7 +307,7 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
                   ],
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
@@ -254,7 +315,8 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
                   child: Text(_saving ? 'Saving…' : (widget.editing == null ? 'Create' : 'Save changes')),
                 ),
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
