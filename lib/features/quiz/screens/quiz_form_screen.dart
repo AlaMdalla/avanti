@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../services/quiz_service.dart';
+import '../../../core/utils/validators.dart';
 
 class QuizFormScreen extends StatefulWidget {
   final String courseId;
@@ -61,24 +62,25 @@ class _QuizFormScreenState extends State<QuizFormScreen> {
             TextFormField(
               controller: _titleCtrl,
               decoration: const InputDecoration(labelText: 'Title'),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) => Validators.combine(v, [
+                Validators.required,
+                (val) => Validators.minLength(val, 3, fieldName: 'Title'),
+                (val) => Validators.maxLength(val, 100, fieldName: 'Title'),
+              ]),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _descCtrl,
               decoration: const InputDecoration(labelText: 'Description'),
               maxLines: 3,
+              validator: (v) => Validators.maxLength(v, 500, fieldName: 'Description'),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _timeCtrl,
               decoration: const InputDecoration(labelText: 'Time limit (seconds, 0 = none)'),
               keyboardType: TextInputType.number,
-              validator: (v) {
-                final n = int.tryParse(v ?? '');
-                if (n == null || n < 0) return 'Enter 0 or a positive integer';
-                return null;
-              },
+              validator: (v) => Validators.nonNegativeInteger(v, fieldName: 'Time limit'),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(

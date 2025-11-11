@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import '../models/course.dart';
-import '../models/instructor.dart';
 import '../services/course_service.dart';
+import 'course_list_screen.dart';
+import '../../../core/utils/validators.dart';
+import 'package:file_picker/file_picker.dart';
+import '../models/instructor.dart';
 import '../services/instructor_service.dart';
 
 class CourseFormScreen extends StatefulWidget {
@@ -173,150 +175,161 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextFormField(
-                  controller: _titleCtrl,
-                  decoration: const InputDecoration(labelText: 'Title'),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _titleCtrl,
+                decoration: const InputDecoration(
+                  labelText: "Title",
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.title),
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _descCtrl,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 12),
-                // Instructor Dropdown
-                _loadingInstructors
-                    ? const Padding(
-                        padding: EdgeInsets.all(16.0),
-                        child: CircularProgressIndicator(),
-                      )
-                    : DropdownButtonFormField<String>(
-                        value: _selectedInstructorId,
-                        decoration: const InputDecoration(
-                          labelText: 'Instructor *',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.person),
-                        ),
-                        items: _instructors
-                            .map((instructor) => DropdownMenuItem(
-                                  value: instructor.id,
-                                  child: Text(instructor.name),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() => _selectedInstructorId = value);
-                        },
-                        validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Please select an instructor' : null,
-                      ),
-                const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 72,
-                    height: 72,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: _pickedImage != null
-                          ? Image.file(_pickedImage!, fit: BoxFit.cover)
-                          : (_uploadedUrl != null && _uploadedUrl!.isNotEmpty)
-                              ? Image.network(_uploadedUrl!, fit: BoxFit.cover)
-                              : Container(
-                                  color: Colors.grey.shade200,
-                                  child: const Icon(Icons.image, color: Colors.grey),
-                                ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _imageCtrl,
-                      decoration: const InputDecoration(
-                        labelText: 'Image URL (optional)',
-                        helperText: 'Leave empty if you will upload an image',
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  OutlinedButton.icon(
-                    onPressed: _saving ? null : _pickImage,
-                    icon: const Icon(Icons.upload_file),
-                    label: const Text('Pick image'),
-                  ),
-                ],
+                validator: (v) => Validators.combine(v, [
+                  Validators.required,
+                  (val) => Validators.minLength(val, 3, fieldName: 'Title'),
+                  (val) => Validators.maxLength(val, 100, fieldName: 'Title'),
+                ]),
               ),
               const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.amber),
+              TextFormField(
+                controller: _descCtrl,
+                decoration: const InputDecoration(
+                  labelText: "Description",
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.description),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.picture_as_pdf, color: Colors.red),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'PDF Content (Optional)',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (_pickedPdf != null || _pdfFileName != null)
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.attach_file, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _pdfFileName ?? 'PDF Selected',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close, size: 20),
-                              onPressed: _removePdf,
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                            ),
-                          ],
-                        ),
-                      )
-                    else
-                      OutlinedButton.icon(
-                        onPressed: _saving ? null : _pickPdf,
-                        icon: const Icon(Icons.upload_file),
-                        label: const Text('Choose PDF'),
+                maxLines: 3,
+                validator: (v) => Validators.maxLength(v, 500, fieldName: 'Description'),
+              ),
+              const SizedBox(height: 12),
+              // Instructor Dropdown
+              _loadingInstructors
+                  ? const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: CircularProgressIndicator(),
+                    )
+                  : DropdownButtonFormField<String>(
+                      value: _selectedInstructorId,
+                      decoration: const InputDecoration(
+                        labelText: 'Instructor *',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.person),
                       ),
-                  ],
+                      items: _instructors
+                          .map((instructor) => DropdownMenuItem(
+                                value: instructor.id,
+                                child: Text(instructor.name),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() => _selectedInstructorId = value);
+                      },
+                      validator: (v) =>
+                          (v == null || v.isEmpty) ? 'Please select an instructor' : null,
+                    ),
+              const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 72,
+                  height: 72,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: _pickedImage != null
+                        ? Image.file(_pickedImage!, fit: BoxFit.cover)
+                        : (_uploadedUrl != null && _uploadedUrl!.isNotEmpty)
+                            ? Image.network(_uploadedUrl!, fit: BoxFit.cover)
+                            : Container(
+                                color: Colors.grey.shade200,
+                                child: const Icon(Icons.image, color: Colors.grey),
+                              ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _saving ? null : _submit,
-                  child: Text(_saving ? 'Saving…' : (widget.editing == null ? 'Create' : 'Save changes')),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: _imageCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Image URL (optional)',
+                      helperText: 'Leave empty if you will upload an image',
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                OutlinedButton.icon(
+                  onPressed: _saving ? null : _pickImage,
+                  icon: const Icon(Icons.upload_file),
+                  label: const Text('Pick image'),
+                ),
               ],
             ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.picture_as_pdf, color: Colors.red),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'PDF Content (Optional)',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  if (_pickedPdf != null || _pdfFileName != null)
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.attach_file, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _pdfFileName ?? 'PDF Selected',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 20),
+                            onPressed: _removePdf,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    OutlinedButton.icon(
+                      onPressed: _saving ? null : _pickPdf,
+                      icon: const Icon(Icons.upload_file),
+                      label: const Text('Choose PDF'),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _saving ? null : _submit,
+                child: Text(_saving ? 'Saving…' : (widget.editing == null ? 'Create' : 'Save changes')),
+              ),
+            ),
+            ],
           ),
         ),
       ),

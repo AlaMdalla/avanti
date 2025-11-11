@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/event.dart';
 import '../services/event_service.dart';
+import '../../../core/utils/validators.dart';
 
 class EventFormScreen extends StatefulWidget {
   final Event? event;
@@ -263,12 +264,11 @@ class _EventFormScreenState extends State<EventFormScreen> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.event),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter event title';
-                  }
-                  return null;
-                },
+                validator: (v) => Validators.combine(v, [
+                  Validators.required,
+                  (val) => Validators.minLength(val, 3, fieldName: 'Title'),
+                  (val) => Validators.maxLength(val, 100, fieldName: 'Title'),
+                ]),
               ),
               const SizedBox(height: 16),
 
@@ -281,6 +281,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
                   prefixIcon: Icon(Icons.description),
                 ),
                 maxLines: 4,
+                validator: (v) => Validators.maxLength(v, 1000, fieldName: 'Description'),
               ),
               const SizedBox(height: 16),
 
@@ -343,6 +344,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.location_on),
                   ),
+                  validator: (v) => Validators.maxLength(v, 200, fieldName: 'Location'),
                 )
               else
                 TextFormField(
@@ -352,6 +354,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.link),
                   ),
+                  validator: (v) => Validators.url(v, required: false),
                 ),
               const SizedBox(height: 16),
 
@@ -364,6 +367,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
                   prefixIcon: Icon(Icons.people),
                 ),
                 keyboardType: TextInputType.number,
+                validator: (v) => Validators.positiveInteger(v, required: false, fieldName: 'Max Attendees'),
               ),
               const SizedBox(height: 24),
 

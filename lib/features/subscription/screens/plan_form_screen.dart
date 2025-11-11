@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/plan.dart';
 import '../services/plan_service.dart';
+import '../../../core/utils/validators.dart';
 
 class PlanFormScreen extends StatefulWidget {
   final Plan? initial;
@@ -80,26 +81,28 @@ class _PlanFormScreenState extends State<PlanFormScreen> {
             TextFormField(
               controller: _nameC,
               decoration: const InputDecoration(labelText: 'Name'),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Required' : null,
+              validator: (v) => Validators.combine(v, [
+                Validators.required,
+                (val) => Validators.minLength(val, 3, fieldName: 'Name'),
+                (val) => Validators.maxLength(val, 50, fieldName: 'Name'),
+              ]),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _descC,
               decoration: const InputDecoration(labelText: 'Description'),
               maxLines: 3,
+              validator: (v) => Validators.maxLength(v, 300, fieldName: 'Description'),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _priceC,
               decoration: const InputDecoration(labelText: 'Price (e.g. 9.99)'),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              validator: (v) {
-                final t = (v ?? '').trim();
-                if (t.isEmpty) return 'Required';
-                final d = double.tryParse(t);
-                if (d == null || d <= 0) return 'Enter a positive number';
-                return null;
-              },
+              validator: (v) => Validators.combine(v, [
+                Validators.required,
+                (val) => Validators.decimalRange(val, min: 0.01, max: 999999.99, fieldName: 'Price'),
+              ]),
             ),
             const SizedBox(height: 12),
             Row(

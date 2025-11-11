@@ -4,6 +4,7 @@ import '../models/module.dart';
 import '../models/course.dart';
 import '../services/module_service.dart';
 import '../services/course_service.dart';
+import '../../../core/utils/validators.dart';
 
 class ModuleFormScreen extends StatefulWidget {
   final Module? editing;
@@ -143,7 +144,11 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
                   hintText: 'e.g., Introduction to Flutter',
                   border: OutlineInputBorder(),
                 ),
-                validator: (val) => val?.isEmpty ?? true ? 'Title is required' : null,
+                validator: (v) => Validators.combine(v, [
+                  Validators.required,
+                  (val) => Validators.minLength(val, 3, fieldName: 'Title'),
+                  (val) => Validators.maxLength(val, 100, fieldName: 'Title'),
+                ]),
               ),
               const SizedBox(height: 16),
 
@@ -156,6 +161,7 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
+                validator: (v) => Validators.maxLength(v, 500, fieldName: 'Description'),
               ),
               const SizedBox(height: 16),
 
@@ -168,6 +174,7 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
+                validator: (v) => Validators.nonNegativeInteger(v, required: false, fieldName: 'Order'),
               ),
               const SizedBox(height: 24),
 

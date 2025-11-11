@@ -5,6 +5,7 @@ import '../models/profile.dart';
 import '../services/profile_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
+import '../../../core/utils/validators.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -145,16 +146,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  String? _validateEmail(String? value) {
-    if (value == null || value.isEmpty) return 'Email is required';
-    if (!value.contains('@')) return 'Enter a valid email';
-    return null;
-  }
-
-  String? _validateRequired(String? value, String fieldName) {
-    if (value == null || value.trim().isEmpty) return '$fieldName is required';
-    return null;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -230,30 +221,43 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           controller: _firstNameController,
                           label: 'First Name *',
                           icon: Icons.person_outline,
-                          validator: (v) => _validateRequired(v, 'First Name'),
+                          validator: (v) => Validators.combine(v, [
+                            Validators.required,
+                            (val) => Validators.alphabetic(val, fieldName: 'First Name'),
+                            (val) => Validators.maxLength(val, 50, fieldName: 'First Name'),
+                          ]),
                         ),
                         _buildTextField(
                           controller: _lastNameController,
                           label: 'Last Name *',
                           icon: Icons.person_outline,
-                          validator: (v) => _validateRequired(v, 'Last Name'),
+                          validator: (v) => Validators.combine(v, [
+                            Validators.required,
+                            (val) => Validators.alphabetic(val, fieldName: 'Last Name'),
+                            (val) => Validators.maxLength(val, 50, fieldName: 'Last Name'),
+                          ]),
                         ),
                         _buildTextField(
                           controller: _pseudoController,
                           label: 'Username / Pseudo *',
                           icon: Icons.alternate_email,
-                          validator: (v) => _validateRequired(v, 'Username'),
+                          validator: (v) => Validators.combine(v, [
+                            Validators.required,
+                            (val) => Validators.minLength(val, 3, fieldName: 'Username'),
+                            (val) => Validators.maxLength(val, 30, fieldName: 'Username'),
+                          ]),
                         ),
                         _buildTextField(
                           controller: _emailController,
                           label: 'Email *',
                           icon: Icons.email_outlined,
-                          validator: _validateEmail,
+                          validator: Validators.email,
                         ),
                         _buildTextField(
                           controller: _phoneController,
                           label: 'Phone Number',
                           icon: Icons.phone_outlined,
+                          validator: (v) => Validators.phone(v, required: false),
                         ),
 
                         const SizedBox(height: 32),
