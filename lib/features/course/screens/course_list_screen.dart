@@ -6,6 +6,7 @@ import '../models/course.dart';
 import '../services/course_service.dart';
 import 'course_form_screen.dart';
 import 'course_view_screen.dart';
+import 'pdf_viewer_screen.dart';
 import 'course_recommendation_screen.dart';
 
 class CourseListScreen extends StatefulWidget {
@@ -89,7 +90,35 @@ class _CourseListScreenState extends State<CourseListScreen> {
                   leading: c.imageUrl != null
                       ? CircleAvatar(backgroundImage: NetworkImage(c.imageUrl!))
                       : const CircleAvatar(child: Icon(Icons.school)),
-                  title: Text(c.title),
+                  title: Row(
+                    children: [
+                      Expanded(child: Text(c.title)),
+                      if (c.pdfUrl != null)
+                        Tooltip(
+                          message: 'View PDF',
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.picture_as_pdf,
+                              color: Colors.red.shade700,
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PdfViewerScreen(
+                                    pdfUrl: c.pdfUrl!,
+                                    title: c.title,
+                                  ),
+                                ),
+                              );
+                            },
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ),
+                    ],
+                  ),
                   subtitle: Text(c.description ?? ''),
                   onTap: () async {
                     await Navigator.push(

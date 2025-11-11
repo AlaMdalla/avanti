@@ -6,6 +6,7 @@ class Course {
   final String title;
   final String? description;
   final String? imageUrl;
+  final String? pdfUrl;
   final String instructorId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -16,6 +17,7 @@ class Course {
     required this.instructorId,
     this.description,
     this.imageUrl,
+    this.pdfUrl,
     this.createdAt,
     this.updatedAt,
   });
@@ -25,6 +27,7 @@ class Course {
     String? title,
     String? description,
     String? imageUrl,
+    String? pdfUrl,
     String? instructorId,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -34,6 +37,7 @@ class Course {
       title: title ?? this.title,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
+      pdfUrl: pdfUrl ?? this.pdfUrl,
       instructorId: instructorId ?? this.instructorId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -46,6 +50,7 @@ class Course {
       title: map['title'] as String,
       description: map['description'] as String?,
       imageUrl: map['image_url'] as String?,
+      pdfUrl: map['pdf_url'] as String?,
       instructorId: map['instructor_id'] as String,
       createdAt: map['created_at'] != null
           ? DateTime.tryParse(map['created_at'] as String)
@@ -62,6 +67,7 @@ class Course {
       'title': title,
       'description': description,
       'image_url': imageUrl,
+      'pdf_url': pdfUrl,
       'instructor_id': instructorId,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
@@ -73,17 +79,20 @@ class CourseInput {
   final String title;
   final String? description;
   final String? imageUrl;
+  final String? pdfUrl;
 
   const CourseInput({
     required this.title,
     this.description,
     this.imageUrl,
+    this.pdfUrl,
   });
 
   Map<String, dynamic> toInsert(String instructorId) => {
         'title': title,
         'description': description,
         'image_url': imageUrl,
+        'pdf_url': pdfUrl,
         'instructor_id': instructorId,
       };
 
@@ -91,6 +100,7 @@ class CourseInput {
         'title': title,
         'description': description,
         'image_url': imageUrl,
+        'pdf_url': pdfUrl,
         'updated_at': DateTime.now().toIso8601String(),
       }..removeWhere((key, value) => value == null);
 }

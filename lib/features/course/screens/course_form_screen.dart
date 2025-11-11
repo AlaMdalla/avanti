@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import '../models/course.dart';
 import '../services/course_service.dart';
@@ -22,7 +23,10 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
   bool _saving = false;
   final _picker = ImagePicker();
   File? _pickedImage;
+  File? _pickedPdf;
   String? _uploadedUrl;
+  String? _uploadedPdfUrl;
+  String? _pdfFileName;
 
   @override
   void initState() {
@@ -30,8 +34,12 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
     if (widget.editing != null) {
       _titleCtrl.text = widget.editing!.title;
       _descCtrl.text = widget.editing!.description ?? '';
-  _uploadedUrl = widget.editing!.imageUrl;
-  _imageCtrl.text = widget.editing!.imageUrl ?? '';
+      _uploadedUrl = widget.editing!.imageUrl;
+      _uploadedPdfUrl = widget.editing!.pdfUrl;
+      _imageCtrl.text = widget.editing!.imageUrl ?? '';
+      if (_uploadedPdfUrl != null) {
+        _pdfFileName = _uploadedPdfUrl!.split('/').last;
+      }
     }
   }
 
@@ -57,10 +65,19 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
         finalImageUrl = _imageCtrl.text.trim();
       }
 
+      // If a PDF is picked, upload it
+      String? finalPdfUrl = _uploadedPdfUrl;
+      if (_pickedPdf != null) {
+        final user = Supabase.instance.client.auth.currentUser;
+        if (user == null) throw Exception('Not authenticated');
+        finalPdfUrl = await _service.uploadPdf(_pickedPdf!, userId: user.id);
+      }
+
       final input = CourseInput(
         title: _titleCtrl.text.trim(),
         description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
         imageUrl: finalImageUrl,
+        pdfUrl: finalPdfUrl,
       );
       if (widget.editing == null) {
         final user = Supabase.instance.client.auth.currentUser;
@@ -72,7 +89,14 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        final errorMsg = e.toString();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            duration: const Duration(seconds: 5),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -84,6 +108,26 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
     if (picked == null) return;
     setState(() {
       _pickedImage = File(picked.path);
+    });
+  }
+
+  Future<void> _pickPdf() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+    );
+    if (result == null) return;
+    setState(() {
+      _pickedPdf = File(result.files.single.path!);
+      _pdfFileName = result.files.single.name;
+    });
+  }
+
+  void _removePdf() {
+    setState(() {
+      _pickedPdf = null;
+      _uploadedPdfUrl = null;
+      _pdfFileName = null;
     });
   }
 
@@ -144,6 +188,63 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
                     label: const Text('Pick image'),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.amber),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.picture_as_pdf, color: Colors.red),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'PDF Content (Optional)',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (_pickedPdf != null || _pdfFileName != null)
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.attach_file, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _pdfFileName ?? 'PDF Selected',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close, size: 20),
+                              onPressed: _removePdf,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      OutlinedButton.icon(
+                        onPressed: _saving ? null : _pickPdf,
+                        icon: const Icon(Icons.upload_file),
+                        label: const Text('Choose PDF'),
+                      ),
+                  ],
+                ),
               ),
               const Spacer(),
               SizedBox(

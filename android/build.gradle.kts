@@ -3,6 +3,11 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    tasks.withType<JavaCompile> {
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
+    }
 }
 
 val newBuildDir: Directory =

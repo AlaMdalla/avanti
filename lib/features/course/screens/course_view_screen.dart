@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../profile/services/profile_service.dart';
 import '../../profile/models/profile.dart';
 import '../models/course.dart';
 import '../services/course_service.dart';
 import 'course_form_screen.dart';
+import 'pdf_viewer_screen.dart';
 import '../../quiz/screens/quiz_list_screen.dart';
 
 class CourseViewScreen extends StatefulWidget {
@@ -65,6 +67,29 @@ class _CourseViewScreenState extends State<CourseViewScreen> {
     }
   }
 
+  Future<void> _openPdf(String pdfUrl) async {
+    try {
+      // Open PDF in app using PDF viewer
+      if (mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PdfViewerScreen(
+              pdfUrl: pdfUrl,
+              title: 'Course Material',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isAdmin = _profile?.role == ProfileRole.admin;
@@ -107,7 +132,94 @@ class _CourseViewScreenState extends State<CourseViewScreen> {
               const SizedBox(height: 8),
               Text(course.description ?? 'No description'),
               const SizedBox(height: 24),
-              Text('Instructor: ${course.instructorId}', style: Theme.of(context).textTheme.labelMedium),
+              // PDF Section
+              if (course.pdfUrl != null)
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.picture_as_pdf, color: Colors.red.shade700, size: 28),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Course PDF Content',
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Click below to view the course material',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: () => _openPdf(course.pdfUrl!),
+                              icon: const Icon(Icons.open_in_browser),
+                              label: const Text('View PDF'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.red.shade700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              // Copy URL to clipboard
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('PDF URL copied to clipboard')),
+                              );
+                            },
+                            icon: const Icon(Icons.download),
+                            label: const Text('Download'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(Icons.picture_as_pdf, color: Colors.grey.shade400, size: 28),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'No PDF content available for this course',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               const SizedBox(height: 24),
               if (isAdmin)
                 FilledButton.icon(
