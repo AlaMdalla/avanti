@@ -20,24 +20,27 @@ class ModuleService {
     for (final moduleData in list) {
       try {
         final moduleMap = moduleData as Map<String, dynamic>;
-        final courseId = moduleMap['course_id'] as String?;
+        final moduleId = moduleMap['id'] as String;
         
+        // Fetch all courses for this module from the junction table
         List<Course> courses = [];
-        
-        if (courseId != null && courseId.isNotEmpty) {
-          try {
-            final courseResponse = await _sb
-                .from('courses')
-                .select('*')
-                .eq('id', courseId)
-                .maybeSingle();
-            
-            if (courseResponse != null) {
-              courses = [Course.fromMap(courseResponse as Map<String, dynamic>)];
-            }
-          } catch (e) {
-            print('Error fetching course: $e');
-          }
+        try {
+          final courseData = await _sb
+              .from('module_courses')
+              .select('course_id, courses(*)')
+              .eq('module_id', moduleId);
+          
+          final courseList = courseData as List<dynamic>;
+          courses = courseList
+              .map((e) {
+                final course = e['courses'] as Map<String, dynamic>?;
+                return course;
+              })
+              .whereType<Map<String, dynamic>>()
+              .map((e) => Course.fromMap(e))
+              .toList();
+        } catch (e) {
+          print('Error fetching courses for module $moduleId: $e');
         }
         
         modules.add(Module(
@@ -71,24 +74,27 @@ class ModuleService {
     }
     
     final moduleMap = data as Map<String, dynamic>;
-    final courseId = moduleMap['course_id'] as String?;
+    final moduleId = moduleMap['id'] as String;
     
+    // Fetch all courses for this module from the junction table
     List<Course> courses = [];
-    
-    if (courseId != null && courseId.isNotEmpty) {
-      try {
-        final courseResponse = await _sb
-            .from('courses')
-            .select('*')
-            .eq('id', courseId)
-            .maybeSingle();
-        
-        if (courseResponse != null) {
-          courses = [Course.fromMap(courseResponse as Map<String, dynamic>)];
-        }
-      } catch (e) {
-        print('Error fetching course: $e');
-      }
+    try {
+      final courseData = await _sb
+          .from('module_courses')
+          .select('course_id, courses(*)')
+          .eq('module_id', moduleId);
+      
+      final courseList = courseData as List<dynamic>;
+      courses = courseList
+          .map((e) {
+            final course = e['courses'] as Map<String, dynamic>?;
+            return course;
+          })
+          .whereType<Map<String, dynamic>>()
+          .map((e) => Course.fromMap(e))
+          .toList();
+    } catch (e) {
+      print('Error fetching courses for module $moduleId: $e');
     }
     
     return Module(

@@ -62,15 +62,46 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
         order: int.tryParse(_orderController.text),
       );
 
+      late String moduleId;
       if (widget.editing != null) {
         await _moduleService.update(widget.editing!.id, input);
+        moduleId = widget.editing!.id;
       } else {
-        await _moduleService.create(input);
+        final newModule = await _moduleService.create(input);
+        moduleId = newModule.id;
+      }
+
+      // Save the selected courses to the module_courses junction table
+      final supabase = Supabase.instance.client;
+      
+      // First, delete existing associations for this module
+      try {
+        await supabase
+            .from('module_courses')
+            .delete()
+            .eq('module_id', moduleId);
+      } catch (e) {
+        print('Error removing old courses: $e');
+      }
+
+      // Then add new course associations
+      for (final courseId in _selectedCourseIds) {
+        try {
+          await _moduleService.addCourseToModule(moduleId, courseId);
+        } catch (e) {
+          print('Error adding course $courseId: $e');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error adding course: $e')),
+            );
+          }
+          return;
+        }
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Module ${widget.editing != null ? 'updated' : 'created'}')),
+          SnackBar(content: Text('Module ${widget.editing != null ? 'updated' : 'created'} with ${_selectedCourseIds.length} course${_selectedCourseIds.length != 1 ? 's' : ''}')),
         );
         Navigator.pop(context, true);
       }

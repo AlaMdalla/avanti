@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/module.dart';
 import '../models/course.dart';
+import '../services/module_service.dart';
 import '../../quiz/models/quiz_models.dart';
 import '../../profile/services/profile_service.dart';
 import '../../profile/models/profile.dart';
@@ -18,6 +19,7 @@ class _ModulesListScreenState extends State<ModulesListScreen> {
   late Future<List<Module>> _modulesFuture;
   final supabase = Supabase.instance.client;
   final _profileService = ProfileService();
+  final _moduleService = ModuleService();
   Profile? _profile;
 
   @override
@@ -37,73 +39,7 @@ class _ModulesListScreenState extends State<ModulesListScreen> {
 
   Future<List<Module>> _fetchModules() async {
     try {
-      // Fetch modules - they have a course_id field for relationship
-      final modulesResponse = await supabase
-          .from('modules')
-          .select('*')
-          .order('order', ascending: true);
-
-      print('Modules Response: $modulesResponse');
-
-      if (modulesResponse == null) {
-        return [];
-      }
-
-      final modulesList = modulesResponse is List ? modulesResponse : [modulesResponse];
-
-      if (modulesList.isEmpty) {
-        return [];
-      }
-
-      // For each module, get the related course
-      final modules = <Module>[];
-      
-      for (final moduleData in modulesList) {
-        try {
-          final moduleMap = moduleData as Map<String, dynamic>;
-          final courseId = moduleMap['course_id'] as String?;
-          
-          List<Course> courses = [];
-          
-          // If module has a course_id, fetch that course
-          if (courseId != null && courseId.isNotEmpty) {
-            try {
-              final courseResponse = await supabase
-                  .from('courses')
-                  .select('*')
-                  .eq('id', courseId)
-                  .maybeSingle();
-              
-              if (courseResponse != null) {
-                courses = [Course.fromMap(courseResponse as Map<String, dynamic>)];
-              }
-            } catch (e) {
-              print('Error fetching course: $e');
-            }
-          }
-          
-          final module = Module(
-            id: moduleMap['id'] as String,
-            title: moduleMap['title'] as String,
-            description: moduleMap['description'] as String?,
-            order: moduleMap['order'] as int?,
-            courses: courses,
-            createdAt: moduleMap['created_at'] != null
-                ? DateTime.tryParse(moduleMap['created_at'] as String)
-                : null,
-            updatedAt: moduleMap['updated_at'] != null
-                ? DateTime.tryParse(moduleMap['updated_at'] as String)
-                : null,
-          );
-          
-          modules.add(module);
-        } catch (e) {
-          print('Error parsing module: $e');
-        }
-      }
-
-      print('Successfully loaded ${modules.length} modules');
-      return modules;
+      return await _moduleService.list();
     } catch (e) {
       print('Error fetching modules: $e');
       return [];
