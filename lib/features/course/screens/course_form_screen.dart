@@ -199,7 +199,11 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
                   prefixIcon: Icon(Icons.description),
                 ),
                 maxLines: 3,
-                validator: (v) => Validators.maxLength(v, 500, fieldName: 'Description'),
+                validator: (v) => Validators.combine(v, [
+                  Validators.required,
+                  (val) => Validators.minLength(val, 10, fieldName: 'Description'),
+                  (val) => Validators.maxLength(val, 500, fieldName: 'Description'),
+                ]),
               ),
               const SizedBox(height: 12),
               // Instructor Dropdown
@@ -224,8 +228,8 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
                       onChanged: (value) {
                         setState(() => _selectedInstructorId = value);
                       },
-                      validator: (v) =>
-                          (v == null || v.isEmpty) ? 'Please select an instructor' : null,
+            validator: (v) =>
+              (v == null || v.isEmpty) ? 'Please select an instructor' : null,
                     ),
               const SizedBox(height: 12),
             Row(
@@ -254,6 +258,7 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
                       labelText: 'Image URL (optional)',
                       helperText: 'Leave empty if you will upload an image',
                     ),
+                    validator: (v) => v != null && v.isNotEmpty ? Validators.url(v) : null,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -317,6 +322,14 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
                       onPressed: _saving ? null : _pickPdf,
                       icon: const Icon(Icons.upload_file),
                       label: const Text('Choose PDF'),
+                    ),
+                  if (_pickedPdf == null && _uploadedPdfUrl == null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        'PDF is required',
+                        style: TextStyle(color: Colors.red, fontSize: 12),
+                      ),
                     ),
                 ],
               ),

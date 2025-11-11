@@ -281,7 +281,11 @@ class _EventFormScreenState extends State<EventFormScreen> {
                   prefixIcon: Icon(Icons.description),
                 ),
                 maxLines: 4,
-                validator: (v) => Validators.maxLength(v, 1000, fieldName: 'Description'),
+                validator: (v) => Validators.combine(v, [
+                  Validators.required,
+                  (val) => Validators.minLength(val, 10, fieldName: 'Description'),
+                  (val) => Validators.maxLength(val, 1000, fieldName: 'Description'),
+                ]),
               ),
               const SizedBox(height: 16),
 
@@ -344,7 +348,10 @@ class _EventFormScreenState extends State<EventFormScreen> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.location_on),
                   ),
-                  validator: (v) => Validators.maxLength(v, 200, fieldName: 'Location'),
+                  validator: (v) => Validators.combine(v, [
+                    Validators.required,
+                    (val) => Validators.maxLength(val, 200, fieldName: 'Location'),
+                  ]),
                 )
               else
                 TextFormField(
@@ -354,7 +361,10 @@ class _EventFormScreenState extends State<EventFormScreen> {
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.link),
                   ),
-                  validator: (v) => Validators.url(v, required: false),
+                  validator: (v) => Validators.combine(v, [
+                    Validators.required,
+                    (val) => Validators.url(val),
+                  ]),
                 ),
               const SizedBox(height: 16),
 
@@ -367,7 +377,10 @@ class _EventFormScreenState extends State<EventFormScreen> {
                   prefixIcon: Icon(Icons.people),
                 ),
                 keyboardType: TextInputType.number,
-                validator: (v) => Validators.positiveInteger(v, required: false, fieldName: 'Max Attendees'),
+                validator: (v) => Validators.combine(v, [
+                  Validators.required,
+                  (val) => Validators.positiveInteger(val, fieldName: 'Max Attendees'),
+                ]),
               ),
               const SizedBox(height: 24),
 

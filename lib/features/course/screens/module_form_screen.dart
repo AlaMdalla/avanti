@@ -20,6 +20,7 @@ class ModuleFormScreen extends StatefulWidget {
 
 class _ModuleFormScreenState extends State<ModuleFormScreen> {
   final _formKey = GlobalKey<FormState>();
+  String? _coursesError;
   final _moduleService = ModuleService();
   final _courseService = CourseService();
   
@@ -161,7 +162,11 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
-                validator: (v) => Validators.maxLength(v, 500, fieldName: 'Description'),
+                validator: (v) => Validators.combine(v, [
+                  Validators.required,
+                  (val) => Validators.minLength(val, 10, fieldName: 'Description'),
+                  (val) => Validators.maxLength(val, 500, fieldName: 'Description'),
+                ]),
               ),
               const SizedBox(height: 16),
 
@@ -190,7 +195,7 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
                   padding: EdgeInsets.symmetric(vertical: 16),
                   child: Text('No courses available'),
                 )
-              else
+              else ...[
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -198,7 +203,6 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
                   itemBuilder: (context, index) {
                     final course = _availableCourses[index];
                     final isSelected = _selectedCourseIds.contains(course.id);
-                    
                     return CheckboxListTile(
                       title: Text(course.title),
                       subtitle: Text(course.description ?? ''),
@@ -215,13 +219,29 @@ class _ModuleFormScreenState extends State<ModuleFormScreen> {
                     );
                   },
                 ),
+                if (_coursesError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      _coursesError!,
+                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                    ),
+                  ),
+              ],
               const SizedBox(height: 24),
 
               // Save Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _save,
+                  onPressed: _isLoading ? null : () {
+                    setState(() {
+                      _coursesError = _selectedCourseIds.isEmpty ? 'Please select at least one course.' : null;
+                    });
+                    if (_formKey.currentState!.validate() && _coursesError == null) {
+                      _save();
+                    }
+                  },
                   child: _isLoading
                       ? const SizedBox(
                           height: 20,
